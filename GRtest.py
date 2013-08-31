@@ -20,7 +20,7 @@ def Pbdot_Mdot(psr):
 
 from datatools.tempo import PARfile
 
-pf = PARfile('/home/zhuww/work/1713_data/tempo/1713.PBDOT.par')
+pf = PARfile('/home/zhuww/data/1713_data/tempo/1713.PBDOT.par')
 
 
 def Shlkovskii(pf):

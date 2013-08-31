@@ -5,8 +5,6 @@ import matplotlib.pyplot as plt
 import pickle 
 from matplotlib.ticker import NullFormatter
 from mpl_toolkits.axes_grid1 import make_axes_locatable
-import scipy.optimize as opt
-
 
 
 MChain = pickle.load(open('MChain.p', 'r'))['Chain']
@@ -18,21 +16,6 @@ y = MChain[:,1]
 #print x.shape, y.shape
 #print x
 #print y
-bs = len(x)
-H, xed, yed = np.histogram2d(x,y, bins=25)
-#extent = [yed[-1], yed[0], xed[-1], xed[0]]
-extent = [ xed[0], xed[-1], yed[-1], yed[0]]
-#extent = [ yed[0], yed[-1], xed[0], xed[-1]]
-#print H.shape, xed.shape, yed.shape
-#print extent
-#print H
-xbin, ybin = [], []
-for i in range(1, len(xed)):
-    xbin.append((xed[i] + xed[i-1])/2.)
-    ybin.append((yed[i] + yed[i-1])/2.)
-
-
-
 
 from scipy import stats
 
@@ -68,8 +51,6 @@ nullfmt   = NullFormatter()         # no labels
 
 # start with a rectangular Figure
 plt.figure(1, figsize=(8,8))
-cnorm = cm.colors.Normalize(vmax=abs(H).max(), vmin=0.)
-cmap = cm.binary
 
 axScatter = plt.subplot(111)
 #axScatter = plt.axes(rect_scatter)
@@ -82,33 +63,7 @@ axScatter = plt.subplot(111)
 #axHisty.yaxis.set_major_formatter(nullfmt)
 
 # the scatter plot:
-#axScatter.scatter(x, y, edgecolor=None)
-total = np.sum(H)
-
-def onesig(lev):
-    return np.sum(H[H>lev])/total - 0.682
-def twosig(lev):
-    return np.sum(H[H>lev])/total - 0.954
-def trisig(lev):
-    return np.sum(H[H>lev])/total - 0.997
-
-#print onesig(50000), twosig(10000), trisig(10000)
-
-levels = opt.bisect(onesig, 1, 100000), opt.bisect(twosig, 1, 50000), opt.bisect(trisig, 1, 10000)
-
-#sys.exit(0)
-
-#print levels
-def fomt(x, i=[0]):
-    i[0]+=1
-    return '%s$\sigma$' % (i[0]/2)
-
-#levels = [500, 1000., 1500]
-axScatter.imshow(H, extent=extent, aspect='auto', interpolation='bicubic', cmap=cm.get_cmap(cmap, len(levels)-1))
-#axScatter.imshow(H)
-CS = axScatter.contour(xbin,ybin, H, levels=levels)
-clabel(CS, inline=1, fmt=fomt)
-#print H.min(), H.max()
+axScatter.scatter(x, y, edgecolor=None)
 #axScatter.set_aspect(1.)
 xlabel('$\dot{G}/G$')
 ylabel('$\kappa_D$')

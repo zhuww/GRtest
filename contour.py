@@ -1,7 +1,7 @@
 from math import *
 import os,sys
 from psrpbdot import Pbdot_Gal, Shlkovskii, Decimal, Pbdot_GW
-from round import TexStyle as SF
+from round import shortform as SF
 
 c = 2.99792458e10
 PI = pi
@@ -38,11 +38,8 @@ from datatools.tempo import tempofit, tempo2fit, touchparfile, uniquename, PARfi
 #pf = PARfile('./1713.ext.par.t2')
 #pf = PARfile('./1713.omdot.par.t2')
 #pf = PARfile('./1713.ext.PBDOT.par')
-#pf = PARfile('./1713.noguppi.par.t2.Jul30')
-#pf = PARfile('./1713.noguppi.par.mcmc')
-pf = PARfile('./1713.ext.FD.par.t2')
-#pf = PARfile('./1713.DMX.final.par.t2')
-
+#pf = PARfile('./1713.noguppi.par.t2')
+pf = PARfile('./1713.noguppi.par.mcmc')
 
 def Pbdot_exc(psr, GdotOG, KD):
     GdotOG = GdotOG/secperday/365
@@ -65,30 +62,14 @@ J1012['Sp'] = 0.1*J1012['M1']
 
 #PbdOPb1713 = 1.5e-13/float(pf.PB[0])/secperday
 #PbdOPb1713 = 6.298516276376e-14/float(pf.PB[0])/secperday
-if pf.PBDOT[0] > Decimal('1.e-10'):
-    pf.PBDOT[0] *= Decimal('1.e-12')
-    pf.PBDOT[1] *= Decimal('1.e-12')
 Pbdot_exc_1713 = pf.PBDOT[0] - Pbdot_Gal(pf) - Decimal(Shlkovskii(pf)) - Pbdot_GW(pf)
-Pbdot_Shl = float(Shlkovskii(pf)) #* 1.e13
-Pbdot_Shl_err = float(pf.PX[1]/pf.PX[0]) * Pbdot_Shl
-Pbdot_Gal_val = float(Pbdot_Gal(pf))  #* 1.e13
-Pbdot_Gal_err = abs(sqrt(4*(0.9/27.2)**2 + (0.4/8.0)**2) * Pbdot_Gal_val)
-Pbdot_exc_err = sqrt((float(pf.PBDOT[1]))**2 + Pbdot_Shl_err**2 + Pbdot_Gal_err**2)
-print 'PSR ', pf.PSRJ
-#print 'Pbdot_obs:', SF((float(pf.PBDOT[0])*1.e13, float(pf.PBDOT[1])*1.e13))
-print 'Pbdot_obs:', SF((float(pf.PBDOT[0]), float(pf.PBDOT[1])))
-print 'Pbdot_Shl:',  SF((Pbdot_Shl, Pbdot_Shl_err))
-print 'Pbdot_Gal:', SF((Pbdot_Gal_val,Pbdot_Gal_err))
-#print 'Pbdot_exc:', SF((float(Pbdot_exc_1713)*1.e13, Pbdot_exc_err))
-print 'Pbdot_exc:', SF((float(Pbdot_exc_1713), Pbdot_exc_err))
-print 'Pbdot_GW:', float(Pbdot_GW(pf)) 
-#sys.exit(0)
+print 'Pbdot_exc_1713:', Pbdot_exc_1713
 PbdOPb1713 = float(Pbdot_exc_1713)/float(pf.PB[0])/secperday
 PbdOPberr1713 = float(pf.PBDOT[1])/float(pf.PB[0])/secperday
 
 print 'Pbdot/Pb [1713]:', SF((PbdOPb1713, PbdOPberr1713))
 
-sys.exit(0)
+#sys.exit(0)
 
 PbdOPb1012 = -0.4e-14/0.60467271355/secperday
 PbdOPberr1012 = 1.6e-14/0.60467271355/secperday/2 #2sigma 95 error bar needs to be reduced to 1 sigam
@@ -224,7 +205,7 @@ class MChain(object):
 if __name__ == '__main__':
     def run(s):
         seed(s) # assigning different initial seed for the random number generator in different threads.
-        steps = 5000000
+        steps = 50000
         with MChain() as Chain:
             #print steps, tmpdir
             mcmc(Chain, steps )
@@ -234,16 +215,15 @@ if __name__ == '__main__':
     #p = Pool(4)
     #p.map(run, range(4))
     run(10)
-
-    #dict = pickle.load(open('bestpar.p', 'r'))
-    #best = dict['BEST']
-    #MarkovChain = pickle.load(open('MChain.p','r'))['Chain']
-    #GdotOG = [x[0] for x in MarkovChain]
-    #KD = [x[1] for x in MarkovChain]
-    #xlabel('$\dot{G}/G$')
-    #ylabel('$\kappa_D$')
-    #plot(GdotOG, KD, 'b-')
-    #plot([best[0]], [best[1]], 'ro')
-    #show()
+    dict = pickle.load(open('bestpar.p', 'r'))
+    best = dict['BEST']
+    MarkovChain = pickle.load(open('MChain.p','r'))['Chain']
+    GdotOG = [x[0] for x in MarkovChain]
+    KD = [x[1] for x in MarkovChain]
+    xlabel('$\dot{G}/G$')
+    ylabel('$\kappa_D$')
+    plot(GdotOG, KD, 'b-')
+    plot([best[0]], [best[1]], 'ro')
+    show()
 
 

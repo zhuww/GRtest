@@ -1,7 +1,6 @@
 from decimal import *
 from math import *
 from round import shortform as SF
-import tools.Coordinate as COD
 
 #costants:
 c = Decimal(2.99792458e10)
@@ -9,12 +8,6 @@ PI = Decimal(pi)
 AU = Decimal(1.469e13)
 Msun = Decimal(1.9882e33)
 secperday = 24*3600
-
-infotable = {
-"J0437-4715":     {'GL':253.39, 'GB':-41.96, 'PB':5.74104646       },
-"J1012+5307":     {'GL':160.35, 'GB':50.86,  'PB':0.60467271355    },
-"J1713+0747":     {'GL':28.75,  'GB':25.22,  'PB':67.8251298718    },
-"J1738+0333":     {'GL':27.72,  'GB':17.74,  'PB':0.3547907344     }}
 
 #psr = {'P':1/Decimal(218.81184391573209821),'Pdot':Decimal(4.0833313846102338808e-16)/Decimal(218.81184391573209821)**2,'Pb':Decimal(67.825129921577592219)*secperday, 'M1':Decimal(1.4)*Msun, 'M2':Decimal(0.3)*Msun}
 
@@ -31,12 +24,10 @@ from datatools.tempo import PARfile
 
 
 def Shlkovskii(pf):
-    inc = (90 - Decimal(str(COD.Dec(pf.DECJ).in_unit_degree)))/180*PI
     d = AU * 180 / PI * 3600 / pf.PX[0] * 1000 
     Pb = pf.PB[0] * secperday
     PMRA = pf.PMRA[0] / 3600000 * PI / 180 / secperday / 365
-    PMDEC = pf.PMDEC[0] / 3600000 * PI / 180 / secperday / 365 * Decimal(str(sin(inc)))
-    #print 'sin: ', sin(inc)
+    PMDEC = pf.PMDEC[0] / 3600000 * PI / 180 / secperday / 365
     return float(str((PMRA**2 + PMDEC**2)*Pb*d/c))
 
 #pf.PMRA[0] = Decimal(2.562)
@@ -76,15 +67,13 @@ def Pbdot_GW(pf):
 from tools.PyATNF import Qatnf
 def Pbdot_Gal(pf):
     name = pf.PSRJ
-    if not name.startswith('J'):name = 'J'+name
     #print name
     #name = 'J1012+5307'
     #name = 'J1713+0747'
     #name = 'J0437-4715'
-    #result = Qatnf(name, ('GL','GB', 'PB', 'Dist'))
-    result = infotable[name]
-    l = Decimal(result['GL'])/180*PI
-    b = Decimal(result['GB'])/180*PI
+    result = Qatnf(name, ('GL','GB', 'PB', 'Dist'))
+    l = Decimal(result['GL'][0])/180*PI
+    b = Decimal(result['GB'][0])/180*PI
     #print result['GL'], result['GB']
     #print l, b
     Pb = pf.PB[0] * secperday
@@ -143,8 +132,8 @@ if __name__ == '__main__':
     #pf  = PARfile('./1713.omdot.par.t2')
     #pf  = PARfile('./1713.ext.PBDOT.par')
     pf  = PARfile('./1738+03.par')
-    pf.PBDOT[0] = pf.PBDOT[0]*Decimal('1.e-12')
-    pf.PBDOT[1] = pf.PBDOT[1]*Decimal('1.e-12')
+    pf.PBDOT[0] = pf.PBDOT[0]*Decimal('1.e-15')
+    pf.PBDOT[1] = pf.PBDOT[1]*Decimal('1.e-15')
 
     #print pf.PMRA, pf.PMDEC
 
