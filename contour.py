@@ -18,11 +18,15 @@ def M1(pf):
     Msun = float(1.98892e30)
     c = float(2.99792458e8)
     m2 = float(pf.M2[0])*Msun
-    I = float(pf.KIN[0])/180*PI
+    if pf.__dict__.has_key('KIN'):
+        I = float(pf.KIN[0])/180*PI
+        sini = sin(I)
+    else:
+        sini = float(pf.SINI[0])
     Pb = float(pf.PB[0])*secperday
     a = float(pf.A1[0])*c
     #result = sqrt(930.998*m2**3*Pb**2/a**3) - m2
-    return (Pb/2/PI*(sqrt(G*(m2*sin(I))**3/a**3))-m2)/Msun
+    return (Pb/2/PI*(sqrt(G*(m2*sini)**3/a**3))-m2)/Msun
 
 
 Sp = lambda pf: 0.1*M1(pf)
@@ -40,8 +44,10 @@ from datatools.tempo import tempofit, tempo2fit, touchparfile, uniquename, PARfi
 #pf = PARfile('./1713.ext.PBDOT.par')
 #pf = PARfile('./1713.noguppi.par.t2.Jul30')
 #pf = PARfile('./1713.noguppi.par.mcmc')
-pf = PARfile('./1713.ext.FD.par.t2')
+#pf = PARfile('./1713.ext.FD.par.t2')
 #pf = PARfile('./1713.DMX.final.par.t2')
+#pf = PARfile('./1713.DMX.noOMDOT.par.t2')
+pf = PARfile('./1909.Paul.par')
 
 
 def Pbdot_exc(psr, GdotOG, KD):
@@ -75,6 +81,7 @@ Pbdot_Gal_val = float(Pbdot_Gal(pf))  #* 1.e13
 Pbdot_Gal_err = abs(sqrt(4*(0.9/27.2)**2 + (0.4/8.0)**2) * Pbdot_Gal_val)
 Pbdot_exc_err = sqrt((float(pf.PBDOT[1]))**2 + Pbdot_Shl_err**2 + Pbdot_Gal_err**2)
 print 'PSR ', pf.PSRJ
+print M1(pf)
 #print 'Pbdot_obs:', SF((float(pf.PBDOT[0])*1.e13, float(pf.PBDOT[1])*1.e13))
 print 'Pbdot_obs:', SF((float(pf.PBDOT[0]), float(pf.PBDOT[1])))
 print 'Pbdot_Shl:',  SF((Pbdot_Shl, Pbdot_Shl_err))

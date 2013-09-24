@@ -14,7 +14,8 @@ infotable = {
 "J0437-4715":     {'GL':253.39, 'GB':-41.96, 'PB':5.74104646       },
 "J1012+5307":     {'GL':160.35, 'GB':50.86,  'PB':0.60467271355    },
 "J1713+0747":     {'GL':28.75,  'GB':25.22,  'PB':67.8251298718    },
-"J1738+0333":     {'GL':27.72,  'GB':17.74,  'PB':0.3547907344     }}
+"J1738+0333":     {'GL':27.72,  'GB':17.74,  'PB':0.3547907344     },
+"J1909-3744":     {'GL':359.73,  'GB':-19.6,  'PB':1.533449450481  }}
 
 #psr = {'P':1/Decimal(218.81184391573209821),'Pdot':Decimal(4.0833313846102338808e-16)/Decimal(218.81184391573209821)**2,'Pb':Decimal(67.825129921577592219)*secperday, 'M1':Decimal(1.4)*Msun, 'M2':Decimal(0.3)*Msun}
 
@@ -51,11 +52,15 @@ def M1(pf):
     Msun = Decimal(1.98892e30)
     c = Decimal(2.99792458e8)
     m2 = pf.M2[0]*Msun
-    I = pf.KIN[0]/180*PI
+    if pf.__dict__.has_key('KIN'):
+        I = pf.KIN[0]/180*PI
+        sini = sin(float(I))
+    else:
+        sini = pf.SINI[0]
     Pb = pf.PB[0]*secperday
     a = pf.A1[0]*c
     #result = sqrt(930.998*m2**3*Pb**2/a**3) - m2
-    return (Pb/2/PI*Decimal(sqrt(G*(m2*Decimal(str(sin(I))))**3/a**3))-m2)/Msun
+    return (Pb/2/PI*Decimal(sqrt(G*(m2*Decimal(str(sini)))**3/a**3))-m2)/Msun
     
 
 #print M1(pf)
