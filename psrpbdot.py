@@ -2,6 +2,8 @@ from decimal import *
 from math import *
 from round import shortform as SF
 import tools.Coordinate as COD
+from tools.Coordinate import RA, Dec
+from astropy import coordinates as coord
 
 #costants:
 c = Decimal(2.99792458e10)
@@ -87,9 +89,14 @@ def Pbdot_Gal(pf):
     #name = 'J1713+0747'
     #name = 'J0437-4715'
     #result = Qatnf(name, ('GL','GB', 'PB', 'Dist'))
-    result = infotable[name]
-    l = Decimal(result['GL'])/180*PI
-    b = Decimal(result['GB'])/180*PI
+    #result = infotable[name]
+    #l = Decimal(result['GL'])/180*PI
+    #b = Decimal(result['GB'])/180*PI
+    ra = RA(pf.RAJ[0])
+    dec = Dec(pf.DECJ[0])
+    pos = coord.FK5Coordinates(str(ra) +' '+ str(dec))
+    l = pos.galactic.l.radians
+    b = pos.galactic.l.radians
     #print result['GL'], result['GB']
     #print l, b
     Pb = pf.PB[0] * secperday

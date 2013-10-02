@@ -1,5 +1,7 @@
 #from decimal import *
 from math import *
+from tools.Coordinate import RA, Dec
+from astropy import coordinates as coord
 
 #costants:
 c = 2.99792458e10
@@ -44,13 +46,18 @@ def M1(pf):
     return (Pb/2/PI*(sqrt(G*(m2*sin(I))**3/a**3))-m2)/Msun
 
 
-from tools.PyATNF import LQatnf
+#from tools.PyATNF import LQatnf
 def Pbdot_Gal(pf):
-    #name = pf.PSRJ
-    name = 'J1713+0747'
-    result = LQatnf(name, ('GL','GB'))
-    l = float(result['GL'][0])/180*PI
-    b = float(result['GB'][0])/180*PI
+    #name = 'J1713+0747'
+    name = pf.PSRJ
+    ra = RA(pf.RAJ[0])
+    dec = Dec(pf.DECJ[0])
+    pos = coord.FK5Coordinates(str(ra) +' '+ str(dec))
+    l = pos.galactic.l.radians
+    b = pos.galactic.l.radians
+    #result = LQatnf(name, ('GL','GB'))
+    #l = float(result['GL'][0])/180*PI
+    #b = float(result['GB'][0])/180*PI
     Pb = float(pf.PB[0]) * secperday
     d = AU * 180 / PI * 3600 / float(pf.PX[0]) * 1000 
     kpc = 3.08568025e21 #cm
@@ -65,10 +72,16 @@ def Pbdot_Gal(pf):
     return Pb*(A_z + A_x)
 
 def Agal(pf):
-    name = 'J1713+0747'
-    result = LQatnf(name, ('GL','GB'))
-    l = float(result['GL'][0])/180*PI
-    b = float(result['GB'][0])/180*PI
+    name = pf.PSRJ
+    #name = 'J1713+0747'
+    ra = RA(pf.RAJ[0])
+    dec = Dec(pf.DECJ[0])
+    pos = coord.FK5Coordinates(str(ra) +' '+ str(dec))
+    l = pos.galactic.l.radians
+    b = pos.galactic.l.radians
+    #result = LQatnf(name, ('GL','GB'))
+    #l = float(result['GL'][0])/180*PI
+    #b = float(result['GB'][0])/180*PI
     Pb = float(pf.PB[0]) * secperday
     d = AU * 180 / PI * 3600 / float(pf.PX[0]) * 1000 
     kpc = 3.08568025e21 #cm
