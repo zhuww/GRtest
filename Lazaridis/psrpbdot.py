@@ -154,7 +154,8 @@ if __name__ == '__main__':
     #pf = PARfile('./1713.ext.pbdot.par.t2')
     #pf  = PARfile('./1713.omdot.par.t2')
     #pf  = PARfile('./1713.ext.PBDOT.par')
-    pf  = PARfile('./1738+03.par')
+    #pf  = PARfile('./1738+03.par')
+    pf  = PARfile('./1909-3744.par')
     pf.PBDOT[0] = pf.PBDOT[0]*Decimal('1.e-12')
     pf.PBDOT[1] = pf.PBDOT[1]*Decimal('1.e-12')
 

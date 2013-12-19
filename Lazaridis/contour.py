@@ -47,7 +47,10 @@ from datatools.tempo import tempofit, tempo2fit, touchparfile, uniquename, PARfi
 #pf = PARfile('./1713.ext.FD.par.t2')
 #pf = PARfile('./1713.DMX.final.par.t2')
 #pf = PARfile('./1713.DMX.noOMDOT.par.t2')
-pf = PARfile('./1909.Paul.par')
+#pf = PARfile('./1909.Paul.par')
+#pf = PARfile('./1909-3744.par')
+#pf = PARfile('./1713.Oct.mcmc.par')
+pf = PARfile('./1713.Nov.test.par')
 
 
 def Pbdot_exc(psr, GdotOG, KD):
@@ -81,7 +84,8 @@ Pbdot_Gal_val = float(Pbdot_Gal(pf))  #* 1.e13
 Pbdot_Gal_err = abs(sqrt(4*(0.9/27.2)**2 + (0.4/8.0)**2) * Pbdot_Gal_val)
 Pbdot_exc_err = sqrt((float(pf.PBDOT[1]))**2 + Pbdot_Shl_err**2 + Pbdot_Gal_err**2)
 print 'PSR ', pf.PSRJ
-print M1(pf)
+#print Pbdot_Shl_err, Pbdot_Gal_err, Pbdot_exc_err
+#print M1(pf)
 #print 'Pbdot_obs:', SF((float(pf.PBDOT[0])*1.e13, float(pf.PBDOT[1])*1.e13))
 print 'Pbdot_obs:', SF((float(pf.PBDOT[0]), float(pf.PBDOT[1])))
 print 'Pbdot_Shl:',  SF((Pbdot_Shl, Pbdot_Shl_err))
@@ -93,9 +97,9 @@ print 'Pbdot_GW:', float(Pbdot_GW(pf))
 PbdOPb1713 = float(Pbdot_exc_1713)/float(pf.PB[0])/secperday
 PbdOPberr1713 = float(pf.PBDOT[1])/float(pf.PB[0])/secperday
 
-print 'Pbdot/Pb [1713]:', SF((PbdOPb1713, PbdOPberr1713))
+print 'Pbdot/Pb [%s]:' % (pf.PSRJ), SF((PbdOPb1713, PbdOPberr1713))
 
-sys.exit(0)
+#sys.exit(0)
 
 PbdOPb1012 = -0.4e-14/0.60467271355/secperday
 PbdOPberr1012 = 1.6e-14/0.60467271355/secperday/2 #2sigma 95 error bar needs to be reduced to 1 sigam
