@@ -1,16 +1,18 @@
 import numpy as np
 import matplotlib.pyplot as plt
 from pylab import rand
-from datatools.tempo import *
-from astropy import coordinates as coord
-from tools.Coordinate import *
-from psrpbdot import M1
 
 import matplotlib.pyplot as plt
 from mpl_toolkits.mplot3d import Axes3D
 from matplotlib.patches import FancyArrowPatch
 from mpl_toolkits.mplot3d import proj3d
+
+from psrpbdot import M1
+from datatools.tempo import *
+from astropy import coordinates as coord
+from tools.Coordinate import *
 import numpy.linalg as linalg
+
 
 class Arrow3D(FancyArrowPatch):
     def __init__(self, xs, ys, zs, *args, **kwargs):
@@ -149,8 +151,9 @@ GT = GT3 * GT2 * GT1
 #print Gp_Gal
 zeta = np.arccos(coszeta)
 
-g_r = Kr * (GT.I * np.matrix((np.sin(0.-zeta),np.cos(0.-zeta),0)).T) #X/linalg.norm(X)
-g_z = -1. * Kz(z) * Gc
+g_r = GT.I * Kr * ( np.matrix((np.sin(0.-zeta),np.cos(0.-zeta),0)).T) #X/linalg.norm(X)
+#g_z = -1. * Kz(z) * Gc
+g_z = GT.I * Kz(z) * (np.matrix((0., 0., -1.)).T) 
 #print g_r, g_z
 g = g_r + g_z
 #print (g_r.T * g_z)/linalg.norm(g)
@@ -356,7 +359,8 @@ def Delta(PX, SINI, PAASCNODE, M1, M2, PB, ECC, xi):
     """
     def getKG(kr, zeta, z, sini, paascnode):
         g_r = kr * (GT.I * np.matrix((np.sin(0.-zeta),np.cos(0.-zeta),0)).T) #X/linalg.norm(X)
-        g_z = -1. * Kz(z) * Gc
+        #g_z = -1. * Kz(z) * Gc
+        g_z = GT.I * Kz(z) * (np.matrix((0., 0., -1.)).T) 
         g = g_r + g_z
         g_NSEW = T * g
         #print g_NSEW
