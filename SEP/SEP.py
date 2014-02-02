@@ -2,28 +2,13 @@ import numpy as np
 import matplotlib.pyplot as plt
 from pylab import rand
 
-import matplotlib.pyplot as plt
-from mpl_toolkits.mplot3d import Axes3D
-from matplotlib.patches import FancyArrowPatch
-from mpl_toolkits.mplot3d import proj3d
-
 from psrpbdot import M1
 from datatools.tempo import *
 from astropy import coordinates as coord
 from tools.Coordinate import *
 import numpy.linalg as linalg
 
-
-class Arrow3D(FancyArrowPatch):
-    def __init__(self, xs, ys, zs, *args, **kwargs):
-        FancyArrowPatch.__init__(self, (0,0), (0,0), *args, **kwargs)
-        self._verts3d = xs, ys, zs
-
-    def draw(self, renderer):
-        xs3d, ys3d, zs3d = self._verts3d
-        xs, ys, zs = proj3d.proj_transform(xs3d, ys3d, zs3d, renderer.M)
-        self.set_positions((xs[0],ys[0]),(xs[1],ys[1]))
-        FancyArrowPatch.draw(self, renderer)
+from Arrow3D import Arrow3D
 #fig = plt.figure(figsize=(10,10))
 #ax = fig.add_subplot(111, aspect='equal')
 
@@ -150,8 +135,10 @@ GT = GT3 * GT2 * GT1
 #Gp_Gal = GT3 * Gp_Gal12
 #print Gp_Gal
 zeta = np.arccos(coszeta)
+print 'zeta: ',zeta
 
-g_r = GT.I * Kr * ( np.matrix((np.sin(0.-zeta),np.cos(0.-zeta),0)).T) #X/linalg.norm(X)
+#g_r = GT.I * Kr * ( np.matrix((np.sin(0.-zeta),np.cos(0.-zeta),0)).T) #X/linalg.norm(X)
+g_r = GT.I * Kr * ( np.matrix((np.cos(0.-zeta),np.sin(0.-zeta),0)).T) #X/linalg.norm(X)
 #g_z = -1. * Kz(z) * Gc
 g_z = GT.I * Kz(z) * (np.matrix((0., 0., -1.)).T) 
 #print g_r, g_z
@@ -187,7 +174,7 @@ KG  = linalg.norm(g_proj)
 g_dir = g_proj/KG
 A_ref = np.matrix((0, -1.* np.sin(Omgang), np.cos(Omgang)))
 #print g_dir, A_ref,A_ref * g_proj 
-g_ang = np.arccos(A_ref * g_proj)
+g_ang = np.arccos(A_ref * g_dir)
 print 'angle between g and periastron: ', g_ang*180./np.pi - float(pf.OM[0])
 print 'Correct projected Galactic acceleration: ', KG
 
@@ -256,6 +243,11 @@ ax.add_artist(AX)
 ax.add_artist(AY)
 ax.add_artist(AZ)
 
+Gg = GT*g/KG*5
+GA = Arrow3D([x,x+Gg[1]], [y,y-Gg[0]], [z,z+Gg[2]], mutation_scale=20, lw=1, arrowstyle="-|>", color="m")
+
+ax.add_artist(GA)
+
 plt.show()
 
 #sys.exit(0)
@@ -311,7 +303,7 @@ def Xi(theta):
         return -1./np.sin(theta)
 
 
-def Delta(PX, SINI, PAASCNODE, M1, M2, PB, ECC, xi):
+def Delta(PX, SINI, PAASCNODE, M1, M2, PB, ECC, OM, xi):
     G = 6.673e-8
     c = 2.99792458e10
     PI = np.pi
@@ -357,7 +349,7 @@ def Delta(PX, SINI, PAASCNODE, M1, M2, PB, ECC, xi):
 
     """
     """
-    def getKG(kr, zeta, z, sini, paascnode):
+    def getKG(kr, zeta, z, sini, paascnode, om):
         g_r = kr * (GT.I * np.matrix((np.sin(0.-zeta),np.cos(0.-zeta),0)).T) #X/linalg.norm(X)
         #g_z = -1. * Kz(z) * Gc
         g_z = GT.I * Kz(z) * (np.matrix((0., 0., -1.)).T) 
@@ -376,11 +368,15 @@ def Delta(PX, SINI, PAASCNODE, M1, M2, PB, ECC, xi):
         #print n_orb
 
         g_proj = g_NSEW - n_orb * (g_NSEW.T*n_orb) 
-        KG  = linalg.norm(g_proj)
-        return KG
+        KG  = float(linalg.norm(g_proj))
+        A_ref = np.matrix((0, -1.* np.sin(Omgang), np.cos(Omgang)))
+        g_ang = np.arccos(A_ref * g_dir)
+        g_ecc = np.cos(g_ang - om/180.*np.pi) * KG
+
+        return float(np.abs(g_ecc))
     KGarray = []
     for i,sini in enumerate(SINI):
-        KGarray.append(getKG(Kr[i], zeta[i], z[i], sini, PAASCNODE[i]))
+        KGarray.append(getKG(Kr[i], zeta[i], z[i], sini, PAASCNODE[i], OM[i]))
     KG = np.array(KGarray)
     #g_dir = g_proj/KG
     #A_ref = np.matrix((0, -1.* np.sin(Omgang), np.cos(Omgang)))
@@ -434,9 +430,11 @@ ichisq = plist.index('chisq')
 iecc = plist.index('E')
 ipx = plist.index('PX')
 iomega = plist.index('PAASCNODE')
+iom = plist.index('OM')
 M2 = np.array([float(p[im2])*Msun for p in MarkovChain])
 PB = np.array([float(p[ipb])*secperday for p in MarkovChain])
 SINI = np.array([float(p[isini]) for p in MarkovChain])
+OM = np.array([float(p[iom]) for p in MarkovChain])
 a = np.array([float(p[ia])*c for p in MarkovChain])
 #print PB, M2, SINI, 
 M1 = (PB/2/pi*np.sqrt(G*(M2*SINI)**3/a**3)-M2)/Msun
@@ -451,7 +449,7 @@ xi = np.array([ Xi(y) for y in npr.uniform(0., 2*np.pi, MCMCSize)])
 #print 'Ecc:', ECC
 #print 'M1', M1, 'M2', M2
 
-delta = Delta(PX, SINI, PAASCNODE, M1, M2, PB, ECC, xi)
+delta = Delta(PX, SINI, PAASCNODE, M1, M2, PB, ECC, OM, xi)
 
 dsize = delta.size
 delta.sort()

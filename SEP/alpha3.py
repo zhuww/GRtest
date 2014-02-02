@@ -12,16 +12,7 @@ from matplotlib.patches import FancyArrowPatch
 from mpl_toolkits.mplot3d import proj3d
 import numpy.linalg as linalg
 
-class Arrow3D(FancyArrowPatch):
-    def __init__(self, xs, ys, zs, *args, **kwargs):
-        FancyArrowPatch.__init__(self, (0,0), (0,0), *args, **kwargs)
-        self._verts3d = xs, ys, zs
-
-    def draw(self, renderer):
-        xs3d, ys3d, zs3d = self._verts3d
-        xs, ys, zs = proj3d.proj_transform(xs3d, ys3d, zs3d, renderer.M)
-        self.set_positions((xs[0],ys[0]),(xs[1],ys[1]))
-        FancyArrowPatch.draw(self, renderer)
+from Arrow3D import Arrow3D
 #fig = plt.figure(figsize=(10,10))
 #ax = fig.add_subplot(111, aspect='equal')
 
@@ -82,8 +73,16 @@ Calculte the projection of g on the orbit plane
 """
 ws_proj = ws_NSEW - n_orb * (ws_NSEW.T*n_orb) 
 
+def Xi(theta):
+    theta %= (2*np.pi)
+    if theta >= 0. and theta < np.pi/2:
+        return 1/np.sin(theta)
+    elif theta >= np.pi/2 and theta <=1.5*np.pi:
+        return 1
+    else:
+        return -1./np.sin(theta)
 
-def alpha3(M1, M2, PB, F0, ECC, PMRA, PMDEC, PX, w):
+def alpha3(M1, M2, PB, F0, ECC, PMRA, PMDEC, PX, SINI, PAASCNODE, OM, w, xi):
     G = 6.673e-8
     c = 2.99792458e10
     PI = np.pi
@@ -110,8 +109,25 @@ def alpha3(M1, M2, PB, F0, ECC, PMRA, PMDEC, PX, w):
     #print wx+wy+wz
     #print ws_NSEW
     w = wx + wy + wz + ws_NSEW
+
+    incang = np.arcsin(SINI)
+    Omgang = PAASCNODE/180.*np.pi
+    A = -1./np.tan(incang)
+    B = -1./np.tan(Omgang)
+    C = 1.
+    A_ref = np.matrix((0, -1.* np.sin(Omgang), np.cos(Omgang)))
+
+    n_orb = np.matrix((A, B, C)).T
+    n_orb= n_orb/linalg.norm(n_orb)
+
     w_proj = w - n_orb * (w.T*n_orb) 
-    return ECC/EF(linalg.norm(w_proj)) 
+    w_leg = linalg.norm(w_proj)
+    w_dir = w_proj/w_leg
+    w_ang = np.arccos(A_ref * w_dir)
+    w_ecc = np.cos(w_ang - OM/180.*np.pi) * w_leg
+
+    return ECC*xi/EF(linalg.norm(w_ecc)) 
+    #return ECC/EF(linalg.norm(w_proj)) 
 
 #M1, M2, PB, F0, ECC, w = 1.3, 0.3, float(pf.PB[0]*secperday), float(pf.F0[0]), float(pf.E[0]), 25.e5
 #PMRA, PMDEC, PX = float(pf.PMRA[0]), float(pf.PMDEC[0]), float(pf.PX[0])
@@ -147,6 +163,7 @@ ipx = plist.index('PX')
 ipmra = plist.index('PMRA')
 ipmdec = plist.index('PMDEC')
 iomega = plist.index('PAASCNODE')
+iom = plist.index('OM')
 M2 = np.array([float(p[im2])*Msun for p in MarkovChain])
 PB = np.array([float(p[ipb])*secperday for p in MarkovChain])
 SINI = np.array([float(p[isini]) for p in MarkovChain])
@@ -160,10 +177,12 @@ PX = np.array([float(p[ipx]) for p in MarkovChain])
 PMRA = np.array([float(p[ipmra]) for p in MarkovChain])
 PMDEC = np.array([float(p[ipmdec]) for p in MarkovChain])
 PAASCNODE = np.array([float(p[iomega]) for p in MarkovChain])
+OM = np.array([float(p[iom]) for p in MarkovChain])
 chisq = [p[ichisq] for p in MarkovChain]
 bestidx = chisq.index(min(chisq))
-w = np.array([ y for y in npr.normal(0., 40000000., MCMCSize)])
-alpha = np.array([alpha3(M1[i], M2[i], PB[i], F0[i], ECC[i], PMRA[i], PMDEC[i], PX[i], w[i]) for i in range(len(w))])
+w = np.array([ y for y in npr.normal(0., 2900000., MCMCSize)])
+xi = np.array([ Xi(y) for y in npr.uniform(0., 2*np.pi, MCMCSize)])
+alpha = np.array([alpha3(M1[i], M2[i], PB[i], F0[i], ECC[i], PMRA[i], PMDEC[i], PX[i], SINI[i], PAASCNODE[i], OM[i], w[i], xi[i]) for i in range(len(w))])
 
 dsize = alpha.size
 alpha.sort()
