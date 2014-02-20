@@ -117,7 +117,7 @@ clabel(CS, inline=1, fmt=fomt, manual=True)
 #print H.min(), H.max()
 #axScatter.set_aspect(1.)
 xlabel(r'$\dot{G}/G [10^{-12}{\rm yr}^{-1}]$')
-ylabel('$\kappa_D[10{-4}]$')
+ylabel('$\kappa_D[10^{-4}]$')
 
 axScatter.axvline(0, linestyle='--', color='k')
 axScatter.axhline(0, linestyle='--', color='k')
@@ -170,4 +170,5 @@ plt.draw()
 plt.show()
 
 from round import shortform as SF
-print SF((xm,xsigma)), SF((ym, ysigma))
+from round import TexStyle as TS
+print TS((xm,xsigma)), TS((ym, ysigma))

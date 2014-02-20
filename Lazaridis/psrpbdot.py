@@ -50,19 +50,21 @@ def Shlkovskii(pf):
 
 
 def M1(pf):
-    G = Decimal(6.673e-11)
-    Msun = Decimal(1.98892e30)
-    c = Decimal(2.99792458e8)
-    m2 = pf.M2[0]*Msun
+    G = Decimal('6.673e-11')
+    Msun = Decimal('1.98892e30')
+    c = Decimal('2.99792458e8')
+    Tsun = Decimal('4.925490947')*Decimal('0.000001') #Tsun == GM/c^3 in seconds
+    m2 = pf.M2[0]
+    Pb = pf.PB[0]*secperday
+    a = pf.A1[0]
     if pf.__dict__.has_key('KIN'):
         I = pf.KIN[0]/180*PI
-        sini = sin(float(I))
+        sini = Decimal(sin(float(I)))
     else:
         sini = pf.SINI[0]
-    Pb = pf.PB[0]*secperday
-    a = pf.A1[0]*c
     #result = sqrt(930.998*m2**3*Pb**2/a**3) - m2
-    return (Pb/2/PI*Decimal(sqrt(G*(m2*Decimal(str(sini)))**3/a**3))-m2)/Msun
+    #return (Pb/2/PI*Decimal(sqrt(G*(m2*Decimal(str(sini)))**3/a**3))-m2)/Msun
+    return Pb/2/PI*((Tsun*(m2*sini)**3/a**3)**Decimal(0.5))-m2
     
 
 #print M1(pf)

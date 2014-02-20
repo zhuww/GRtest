@@ -13,9 +13,6 @@ from mpl_toolkits.mplot3d import proj3d
 import numpy.linalg as linalg
 
 from Arrow3D import Arrow3D
-#fig = plt.figure(figsize=(10,10))
-#ax = fig.add_subplot(111, aspect='equal')
-
 
 G = Decimal(6.673e-8)
 c = Decimal(2.99792458e10)
@@ -23,23 +20,6 @@ PI = Decimal(pi)
 AU = Decimal(1.469e13)
 Msun = Decimal(1.9882e33)
 secperday = 24*3600
-
-#data = np.genfromtxt(open('log_arms.out', 'r'), dtype = [('Num', 'i'), ('n', 'i'), ('x', 'f8'),('y', 'f8')])[1:]
-#UniqNum = np.unique(data['Num'])
-#fig = plt.figure(figsize=(10,10))
-#ax = fig.add_subplot(111, aspect='equal')
-#solardist = 8.33
-#for num in UniqNum:
-    #x = data['x'][data['Num'] == num]
-    #y = data['y'][data['Num'] == num]
-    #ax.plot(x,y,'b-')
-    #ax.plot([0],[solardist], 'yo', ms=15)
-    #ax.plot([0],[0], 'k*', ms=15)
-    ##ax.text(0,0,'GC')
-    #ax.set_xlabel('x (kpc)')
-    #ax.set_ylabel('y (kpc)')
-    #ax.set_xlim((-4.0,6.8))
-    #ax.set_ylim((-0.2,10.6))
 
 def getGpos(pf):
     ra = RA(pf.RAJ[0])
@@ -51,27 +31,12 @@ def getGpos(pf):
 
 pf = PARfile('1713.Dec.mcmc.par')
 
-from CoordTrans import *
+from GalacticGeometry import *
 
-""" 
-The solar system's proper motion in CMB frame is known to be 369+/-0.9 km/s in the direction of (l,b) = 263.99+/-0.14 deg, 48.26+/-0.03 deg (Kogut et al. 1993, Fixsen et al. 1996, Hinshaw et al. 2009)
-"""
-wsolar = 369. #See ref below (aaa+13 Planck Team: Aghanim, N. et al. 2013. Planck confirms this using a different method)
-wserr = 0.9 #Kogut et al. 1993, Fixsen et al 1996, Hinshaw et al. 2009
-lws, bws = 263.99/180.*np.pi, 48.26/180.*np.pi
+T, GT = GetTransferMatrix(pf)
+pos1713 = coord.FK5Coordinates(str(COORD.RA(pf.RAJ[0]))+' '+str(COORD.Dec(pf.DECJ[0])))
+GCpos = coord.FK5Coordinates('17h45m40.04s -29d00m28.1s')
 
-w_s = wsolar * (GT.I * np.matrix((np.cos(bws)*np.sin(lws),np.cos(bws)*np.cos(lws),np.sin(bws))).T)
-ws_NSEW = T * w_s
-print 'Solar system speed in sky plane frame'
-print ws_NSEW
-
-#print linalg.norm(w_s)
-#print pf.parfile
-
-"""
-Calculte the projection of g on the orbit plane
-"""
-ws_proj = ws_NSEW - n_orb * (ws_NSEW.T*n_orb) 
 
 def Xi(theta):
     theta %= (2*np.pi)

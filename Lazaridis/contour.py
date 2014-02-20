@@ -8,7 +8,7 @@ PI = pi
 AU = 1.469e13
 Msun = 1.9882e33
 secperday = 24*3600
-Tsun = 4.9225e-6
+Tsun = 4.925490947e-6
 
 def M2(pf):
     return float(pf.M2[0])*Msun
@@ -50,7 +50,9 @@ from datatools.tempo import tempofit, tempo2fit, touchparfile, uniquename, PARfi
 #pf = PARfile('./1909.Paul.par')
 #pf = PARfile('./1909-3744.par')
 #pf = PARfile('./1713.Oct.mcmc.par')
-pf = PARfile('./1713.Nov.test.par')
+#pf = PARfile('./1713.Nov.test.par')
+#pf = PARfile('./mcmc.par')
+pf = PARfile('./mcmcresult.par')
 
 
 def Pbdot_exc(psr, GdotOG, KD):
