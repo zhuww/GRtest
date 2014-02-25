@@ -14,4 +14,4 @@ print MCMCSize
 
 SmallerChain = random.sample(MarkovChain, 10000)
 dct = {'Chain':SmallerChain}
-pickle.dump(dct, open('SmallMChain.p', 'wb'), protocol=2)
+pickle.dump(dct, open('TinyMChain.p', 'wb'), protocol=2)

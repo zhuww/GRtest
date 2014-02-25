@@ -15,8 +15,8 @@ solardist = 8.34
 
 from GalacticGeometry import *
 #pf = PARfile('1713.Dec.mcmc.par')
-#pf = PARfile('mcmcresult.par')
-pf = PARfile('1713.sns.par')
+pf = PARfile('mcmcresult.par')
+#pf = PARfile('1713.sns.par')
 
 gl, gb = getGpos(pf)
 D = 1./float(pf.PX[0])
@@ -29,13 +29,14 @@ pos1713 = coord.FK5Coordinates(str(COORD.RA(pf.RAJ[0]))+' '+str(COORD.Dec(pf.DEC
 GCpos = coord.FK5Coordinates('17h45m40.04s -29d00m28.1s')
 
 Eerr = float(pf.E[1])
-OMerr = float(pf.OM[1])
+OMerr = float(pf.OM[1])/180.*np.pi
 
 G = 6.673e-8
 c = 2.99792458e10
 PI = np.pi
 AU = 1.469e13
 Msun = 1.9882e33
+Tsun = 4.925490947e-6
 secperday = 24*3600
 R0 = solardist
 DRA = pos1713.ra.radians - GCpos.ra.radians
@@ -89,7 +90,9 @@ def EccArea(ECC, EF, THETA):
     areas = []
     for v4 in fourpnts:
         abs4 = [abs(v) for v in v4]
-        p4 = [phase(v) for v in v4]
+        p4 = np.array([phase(v) for v in v4])
+        if p4.min() < 0. and p4.max() - p4.min() > np.pi:
+            p4[p4<0.] += 2.*np.pi
         if np.mean(abs4) < Eerr*3 and abs(np.mean(p4))<OMerr*3:
             #print "hei, it's happening"
             value = max((np.log10(min(max(abs4), 0.05)) - np.log10(max(min(abs4),1.e-6))),0)*np.pi*2
@@ -98,6 +101,8 @@ def EccArea(ECC, EF, THETA):
         #print abs4, p4
         areas.append(value)
     areas = np.array(areas)
+    #print 'EF, ECC, THETA, AREA, A4, p4', EF.mean(), ECC.mean(), THETA.mean(), areas.mean(), max(abs4),min(abs4), max(p4), min(p4)
+    #print 'Eerr, OMerr', Eerr,OMerr
     return areas
 
 def Pintegrant(PX, SINI, PAASCNODE, M1, M2, PB, ECC, OM, Delta):
@@ -122,10 +127,13 @@ def Pintegrant(PX, SINI, PAASCNODE, M1, M2, PB, ECC, OM, Delta):
         #THETA.append(np.abs(theta-np.pi))
         KGarray.append(kg)
     THETA = np.array(THETA)
+    THETA[THETA<0]+=(np.pi*2)
     KG = np.array(KGarray)
     #print 'Correct projected Galactic acceleration: ', KG
-    EF = Delta * ( 0.5 * KG * c**2 / G / Mtot / Msun /(2*PI/PB)**2 )
+    EF = Delta * ( 0.5 * KG / Mtot /Tsun/c/(2*PI/PB)**2 )
+    #EF = Delta * ( 0.5 * KG * c**2 / G / Mtot / Msun /(2*PI/PB)**2 )
     #return  ECC*xi/( 0.5 * KG * c**2 / G / Mtot / Msun /(2*PI/PB)**2 )
+    #print 'Delta:', Delta,
     Areas = 0.
     Areas += sum(EccArea(ECC, EF, THETA))
     Areas += sum(EccArea(ECC, EF, THETA-np.pi))
@@ -140,7 +148,8 @@ secperday = 24*3600
 dic = pickle.load(open('bestpar.p', 'rb'))
 best = dic['BEST']
 plist = dic['parameters'] 
-MChain = pickle.load(open('SmallMChain.p','rb'))
+MChain = pickle.load(open('TinyMChain.p','rb'))
+#MChain = pickle.load(open('SmallMChain.p','rb'))
 MarkovChain = MChain['Chain']
 MCMCSize = len(MarkovChain)
 #MChain = pickle.load(open('MChain.p','rb'))
@@ -192,7 +201,8 @@ Integ = lambda d: Pintegrant(PX, SINI, PAASCNODE, M1, M2, PB, ECC, OM, d)
 #delta.sort()
 #print delta[int(dsize*0.95)] , delta[int(dsize*0.05)]
 
-delta = np.arange(1.e-5, 1.e-1, 2.e-5) #ingrid setting
+#delta = np.arange(1.e-5, 1.e-1, 2.e-5) #ingrid setting
+delta = np.arange(5.e-5, 0.03, 5.e-5) #ingrid setting
 #delta = np.arange(1.e-8, 1.e-4, 5.e-8)
 res = np.array([Integ(d) for d in delta])
 
@@ -215,5 +225,6 @@ ax.plot(delta, res, '-')
 #ax.logx()
 #ax.hist(delta, bins=50, normed=1)
 ax.semilogx(nonposy='clip')
+ax.semilogy(nonposy='clip')
 plt.show()
 
