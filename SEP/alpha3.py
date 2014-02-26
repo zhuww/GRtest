@@ -13,29 +13,27 @@ from mpl_toolkits.mplot3d import Axes3D
 from matplotlib.patches import FancyArrowPatch
 from mpl_toolkits.mplot3d import proj3d
 import numpy.linalg as linalg
-
-#from Arrow3D import Arrow3D
-
-G = Decimal(6.673e-8)
-c = Decimal(2.99792458e10)
-PI = Decimal(pi)
-AU = Decimal(1.469e13)
-Msun = Decimal(1.9882e33)
-secperday = 24*3600
-
-#pf = PARfile('1713.Dec.mcmc.par')
-#pf = PARfile('1713.sns.par')
-pf = PARfile('mcmcresult.par')
-
 from GalacticGeometry import *
 
-T, GT = GetTransferMatrix(pf)
-pos1713 = coord.FK5Coordinates(str(COORD.RA(pf.RAJ[0]))+' '+str(COORD.Dec(pf.DECJ[0])))
-GCpos = coord.FK5Coordinates('17h45m40.04s -29d00m28.1s')
+G = 6.673e-8
+c = 2.99792458e10
+PI = np.pi
+AU = 1.469e13
+Tsun = 4.925490947e-6
+secperday = 24*3600
+secperyear = secperday*365.24218967
+kpc = 3.0857e21
+
+"""load the parfile"""
+pf = PARfile('mcmcresult.par')
 Eerr = float(pf.E[1])
 OMerr = float(pf.OM[1])/180.*np.pi
+"""calculate coordinate transfermation matrix using the parfile"""
+T, GT = GetTransferMatrix(pf)
 
 def EccArea(ECC, EF, THETA):
+    """ calculate the "area" in the four 3-sigma points for given ECC_observed, ECC_forced and the angle between them.
+    """
     global Eerr, OMerr
     #THETA[THETA<0]+=(np.pi*2)
     Emax, Emin = ECC +Eerr*3 , ECC-Eerr*3
@@ -54,34 +52,18 @@ def EccArea(ECC, EF, THETA):
             value = max((np.log10(min(max(abs4), 0.05)) - np.log10(max(min(abs4),1.e-6))),0)*(max(p4)-min(p4))
             if max(p4)-min(p4)>1.:
                 print 'what?', value
-        #print abs4, p4
-        #print max((np.log10(min(max(abs4), 0.05)) - np.log10(max(min(abs4),1.e-6))),0),(max(p4)-min(p4)), value
         areas.append(value)
     areas = np.array(areas)
-    #print 'theta:', THETA[-1], 'thi:', np.mean(p4) ,
-    #print 'enatcontr:', max((np.log10(min(max(abs4), 0.05)) - np.log10(max(min(abs4),1.e-6))),0), 'thicontr',(max(p4)-min(p4))
-    #print 'EF, ECC, THETA, AREA, OMerr', EF.mean(), ECC.mean(), THETA.mean(), areas.mean(), (max(p4)-min(p4)), 'max, min:', areas.max(), areas.min()
-
-    #print 'Eerr, OMerr', Eerr,OMerr
     return areas
 
-#def alpha3(M1, M2, PB, F0, ECC, PMRA, PMDEC, PX, SINI, PAASCNODE, OM, w, xi):
 def Pintegrant(M1, M2, PB, F0, ECC, PMRA, PMDEC, PX, SINI, PAASCNODE, OM, w):
-    G = 6.673e-8
-    c = 2.99792458e10
-    PI = np.pi
-    AU = 1.469e13
-    #Msun = 1.9882e33
-    Tsun = 4.925490947e-6
-    secperday = 24*3600
-    secperyear = secperday*365.24218967
-    kpc = 3.0857e21
+    """ Calculate the "probability" for given Delta and timing parameters
+    """
     Mtot = M1+M2
 
     wserr = 0.9e5 #Kogut et al. 1993, Fixsen et al 1996, Hinshaw et al. 2009
     wsolar = 369.e5 + npr.randn()*wserr#See ref below (aaa+13 Planck Team: Aghanim, N. et al. 2013. Planck confirms this using a different method)
     lws, bws = 263.99/180.*np.pi, 48.26/180.*np.pi
-    #w_s = wsolar * (GT.I * np.matrix((np.cos(bws)*np.sin(lws),np.cos(bws)*np.cos(lws),np.sin(bws))).T)
     w_s = wsolar * (GT.I * np.matrix((np.cos(bws)*np.cos(lws),np.cos(bws)*np.sin(lws),np.sin(bws))).T)
     ws_NSEW = T * w_s
     D = kpc/PX
@@ -107,18 +89,12 @@ def Pintegrant(M1, M2, PB, F0, ECC, PMRA, PMDEC, PX, SINI, PAASCNODE, OM, w):
     w_leg = linalg.norm(w_proj)
     w_dir = w_proj/w_leg
     w_ang = np.arccos(A_ref * w_dir)
-    #w_ecc = np.cos(w_ang - OM/180.*np.pi) * w_leg
 
     #EF = lambda w:0.21* M1 * w * (PB**2) * c**2 *F0/24 / PI /G /Mtot/Msun
     EF = lambda w:0.21* M1 * w * (PB**2) *F0/24 / PI /Mtot /c /Tsun
 
     theta, ef = float(w_ang - OM/180.*np.pi), EF(w_leg) 
     return theta, ef
-    #return ECC/EF(linalg.norm(w_proj)) 
-
-#M1, M2, PB, F0, ECC, w = 1.3, 0.3, float(pf.PB[0]*secperday), float(pf.F0[0]), float(pf.E[0]), 25.e5
-#PMRA, PMDEC, PX = float(pf.PMRA[0]), float(pf.PMDEC[0]), float(pf.PX[0])
-#print alpha3(M1, M2, PB, F0, ECC, PMRA, PMDEC, PX, w)
 
 ''' load in the MCMC results for Delta estimation '''
 import cPickle as pickle
@@ -169,29 +145,19 @@ OM = np.array([float(p[iom]) for p in MarkovChain])
 chisq = [p[ichisq] for p in MarkovChain]
 bestidx = chisq.index(min(chisq))
 w = np.array([ y for y in npr.normal(0., 2900000., MCMCSize)])
-#alpha = np.array([alpha3(M1[i], M2[i], PB[i], F0[i], ECC[i], PMRA[i], PMDEC[i], PX[i], SINI[i], PAASCNODE[i], OM[i], w[i], xi[i]) for i in range(len(w))])
 
 def Integ(alpha):
     global M1, M2, PB, F0, ECC, PMRA, PMDEC, PX, SINI, PAASCNODE, OM, w
     pres = np.array([Pintegrant(M1[i], M2[i], PB[i], F0[i], ECC[i], PMRA[i], PMDEC[i], PX[i], SINI[i], PAASCNODE[i], OM[i], w[i]) for i in range(len(w))])
-    #pres = np.array([Pintegrant(M1[i], M2[i], PB[i], F0[i], ECC[i], PMRA[i], PMDEC[i], PX[i], SINI[i], PAASCNODE[i], float(pf.OM[0]), w[i]) for i in range(len(w))])
     THETA = 1.* pres[...,0]
     EF = alpha * pres[...,1]
     Area1 = sum(EccArea(ECC, EF, THETA))
     Area2 = sum(EccArea(ECC, EF, np.pi-THETA))
     Areas = Area1 + Area2
-    #print 'A3:', alpha, Areas/len(EF), Area1/len(EF), Area2/len(EF)
     return Areas
 
 
-#dsize = alpha.size
-#alpha.sort()
-#alpha = np.arange(1.e-18, 5.e-15, 5.e-17) #ingrid setting
-#alpha = np.arange(1.e-22, 5.e-19, 2.e-22) #ingrid setting
 alpha = np.arange(5.e-22, 1.e-19, 5.e-22) #ingrid setting
-#print Integ(1.e-19)
-#sys.exit(0)
-#delta = np.arange(1.e-8, 1.e-4, 5.e-8)
 res = np.array([Integ(a) for a in alpha])
 
 np.save(open('alpha3.npy', 'wb'), res)
@@ -211,7 +177,6 @@ for i,c in enumerate(cdf):
 fig = plt.figure()
 ax = fig.add_subplot(111)
 ax.plot(alpha, res, '-')
-#ax.logx()
 #ax.hist(delta, bins=50, normed=1)
 ax.semilogx(nonposy='clip')
 #ax.semilogy(nonposy='clip')
