@@ -98,25 +98,27 @@ def Pbdot_Gal(pf):
     dec = Dec(pf.DECJ[0])
     pos = coord.FK5Coordinates(str(ra) +' '+ str(dec))
     l = pos.galactic.l.radians
-    b = pos.galactic.l.radians
+    b = pos.galactic.b.radians
     #print result['GL'], result['GB']
-    #print l, b
+    print 'l, b in deg', l*180./3.14159265, b*180/3.14159265
     Pb = pf.PB[0] * secperday
     #Pb = Decimal(result['PB'][0]) * secperday
+    print 'd', 1/pf.PX[0]
     d = AU * 180 / PI * 3600 / pf.PX[0] * 1000 
     kpc = Decimal(3.08568025e21) #cm
     #d = Decimal(result['Dist'][0]) * kpc
     z_kpc = d*Decimal(sin(b))/kpc
     a_z = (Decimal(2.27)*z_kpc + Decimal(3.681)*Decimal(1 - exp(Decimal(-4.31)*z_kpc)))*Decimal(1.e-9) #cm s^-2
-    #print a_z
+    print 'a, sini(b)', a_z, sin(b)
     A_z = -1 * a_z *abs(Decimal(sin(b)))/c
     #print A_z
-    R0 = 8 * kpc # 8.0 +/- 0.4 kpc
+    R0 = Decimal(8.34) * kpc # Reid et al. 2014
     #Omega0 = 22000000
-    Omega0 = Decimal(27.2 * 8 * 1.e5) #27.2 +/- 0.9 kms s^-1 Feast & Whitelock 1997; Lazaridis et al. 2009
+    #Omega0 = Decimal(27.2 * 8 * 1.e5) #27.2 +/- 0.9 kms s^-1 Feast & Whitelock 1997; Lazaridis et al. 2009
+    Omega0 = Decimal(240. * 1.e5) #240+/-8 km/s; Reid et al  2014
     beta = float(d/R0) * cos(b) - cos(l)
     A_x = -1/c * Decimal(cos(b)) * (Omega0**2/R0) * Decimal(cos(l) + beta/(sin(l)**2 + beta**2))
-    #print A_x
+    print 'Ax, Az:', A_x, A_z
     return Pb*(A_z + A_x)
 
 #print Pbdot_GW(pf)

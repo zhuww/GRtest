@@ -48,11 +48,11 @@ from datatools.tempo import tempofit, tempo2fit, touchparfile, uniquename, PARfi
 #pf = PARfile('./1713.DMX.final.par.t2')
 #pf = PARfile('./1713.DMX.noOMDOT.par.t2')
 #pf = PARfile('./1909.Paul.par')
-#pf = PARfile('./1909-3744.par')
+pf = PARfile('./1909-3744.par')
 #pf = PARfile('./1713.Oct.mcmc.par')
 #pf = PARfile('./1713.Nov.test.par')
 #pf = PARfile('./mcmc.par')
-pf = PARfile('./mcmcresult.par')
+#pf = PARfile('./mcmcresult.par')
 
 
 def Pbdot_exc(psr, GdotOG, KD):
@@ -79,6 +79,8 @@ J1012['Sp'] = 0.1*J1012['M1']
 if pf.PBDOT[0] > Decimal('1.e-10'):
     pf.PBDOT[0] *= Decimal('1.e-12')
     pf.PBDOT[1] *= Decimal('1.e-12')
+    #pf.PBDOT[0] *= Decimal('1.e-15')
+    #pf.PBDOT[1] *= Decimal('1.e-15')
 Pbdot_exc_1713 = pf.PBDOT[0] - Pbdot_Gal(pf) - Decimal(Shlkovskii(pf)) - Pbdot_GW(pf)
 Pbdot_Shl = float(Shlkovskii(pf)) #* 1.e13
 Pbdot_Shl_err = float(pf.PX[1]/pf.PX[0]) * Pbdot_Shl
@@ -108,7 +110,7 @@ PbdOPberr1012 = 1.6e-14/0.60467271355/secperday/2 #2sigma 95 error bar needs to 
 
 #print PbdOPb1012, PbdOPberr1012
 
-#sys.exit(0)
+sys.exit(0)
 
 pf = PARfile('./J0437.par')
 J0437 = {'M1':M1(pf), 'M2':M2(pf)/Msun, 'Sp':Sp(pf), 'Pb':float(pf.PB[0])*secperday}
@@ -117,8 +119,8 @@ PbdOPb0437 = 1.04e-19
 PbdOPberr0437 = 5.7e-19 #2sigma 95 error bar needs to be reduced to 1 sigam
 
 pf = PARfile('./1738+03.par')
-pf.PBDOT[0] = pf.PBDOT[0]*Decimal('1.e-15')
-pf.PBDOT[1] = pf.PBDOT[1]*Decimal('1.e-15')
+pf.PBDOT[0] = pf.PBDOT[0]*Decimal('1.e-12')
+pf.PBDOT[1] = pf.PBDOT[1]*Decimal('1.e-12')
 J1738 = {'M1':M1(pf), 'M2':M2(pf)/Msun, 'Sp':Sp(pf), 'Pb':float(pf.PB[0])*secperday}
 #print J1738['M1']
 #sys.exit(0)
