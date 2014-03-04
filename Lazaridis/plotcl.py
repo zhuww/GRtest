@@ -171,4 +171,12 @@ plt.show()
 
 from round import shortform as SF
 from round import TexStyle as TS
-print TS((xm,xsigma)), TS((ym, ysigma))
+print TS((xm,2*xsigma)), TS((ym, 2*ysigma))
+secperday = 24*3600
+secperyear = secperday * 365.24218967
+H0 = 67.80 #+/- 0.77 km/s/Mpc Planck
+Mpc_in_km  = 3.08568e19
+T_Hubble = Mpc_in_km/H0/secperyear  #year
+print T_Hubble
+print 'factor of change  in Hubble time:', T_Hubble * (xm+3*xsigma)*1.e-12
+
