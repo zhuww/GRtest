@@ -1,6 +1,6 @@
 from math import *
 import os,sys
-from GRfunctions import Pbdot_Gal, Shlkovskii, Decimal, Pbdot_GW
+from psrpbdot import Pbdot_Gal, Shlkovskii, Decimal, Pbdot_GW
 from psrpbdot import M1 as DM1
 from round import TexStyle as SF
 
@@ -68,12 +68,15 @@ if pf.PBDOT[0] > Decimal('1.e-10'):
     pf.PBDOT[1] *= Decimal('1.e-12')
     #pf.PBDOT[0] *= Decimal('1.e-15')
     #pf.PBDOT[1] *= Decimal('1.e-15')
-Pbdot_exc_1713 = pf.PBDOT[0] - Pbdot_Gal(pf) - Decimal(Shlkovskii(pf)) - Pbdot_GW(pf)
-Pbdot_Shl = float(Shlkovskii(pf)) #* 1.e13
-Pbdot_Shl_err = float(pf.PX[1]/pf.PX[0]) * Pbdot_Shl
-Pbdot_Gal_val = float(Pbdot_Gal(pf))  #* 1.e13
-Pbdot_Gal_err = abs(sqrt(4*(0.9/27.2)**2 + (0.4/8.0)**2) * Pbdot_Gal_val)
-Pbdot_exc_err = sqrt((float(pf.PBDOT[1]))**2 + Pbdot_Shl_err**2 + Pbdot_Gal_err**2)
+Shl = Shlkovskii(pf)
+Gal = Pbdot_Gal(pf)
+GW = Pbdot_GW(pf)
+Pbdot_exc_1713 = float(pf.PBDOT[0]) - Gal[0] - Shl[0] - GW[0]
+Pbdot_Shl = Shl[0]
+Pbdot_Shl_err = Shl[1]
+Pbdot_Gal_val = Gal[0]
+Pbdot_Gal_err = Gal[1]
+Pbdot_exc_err = sqrt(float(pf.PBDOT[1])**2 + Gal[1]**2 + Shl[1]**2 + GW[1]**2)
 print 'PSR ', pf.PSRJ
 #print Pbdot_Shl_err, Pbdot_Gal_err, Pbdot_exc_err
 #print M1(pf)
@@ -83,10 +86,11 @@ print 'Pbdot_Shl:',  SF((Pbdot_Shl, Pbdot_Shl_err))
 print 'Pbdot_Gal:', SF((Pbdot_Gal_val,Pbdot_Gal_err))
 #print 'Pbdot_exc:', SF((float(Pbdot_exc_1713)*1.e13, Pbdot_exc_err))
 print 'Pbdot_exc:', SF((float(Pbdot_exc_1713), Pbdot_exc_err))
-print 'Pbdot_GW:', float(Pbdot_GW(pf)) 
+print 'Pbdot_GW:', SF(Pbdot_GW(pf)) 
 #sys.exit(0)
 PbdOPb1713 = float(Pbdot_exc_1713)/float(pf.PB[0])/secperday
-PbdOPberr1713 = float(pf.PBDOT[1])/float(pf.PB[0])/secperday
+#PbdOPberr1713 = float(pf.PBDOT[1])/float(pf.PB[0])/secperday
+PbdOPberr1713 = Pbdot_exc_err/float(pf.PB[0])/secperday
 
 print 'Pbdot/Pb [%s]:' % (pf.PSRJ), SF((PbdOPb1713, PbdOPberr1713))
 
@@ -109,26 +113,51 @@ pf = PARfile('./1738+03.par')
 pf.PBDOT[0] = pf.PBDOT[0]*Decimal('1.e-12')
 pf.PBDOT[1] = pf.PBDOT[1]*Decimal('1.e-12')
 J1738 = {'M1':M1(pf), 'M2':float(pf.M2[0]), 'Sp':Sp(pf), 'Pb':float(pf.PB[0])*secperday}
-#print J1738['M1']
-#sys.exit(0)
-PbdOPb1738 = float(pf.PBDOT[0] -Pbdot_Gal(pf)-Decimal(Shlkovskii(pf))-Pbdot_GW(pf) )/float(pf.PB[0])/secperday
+Shl = Shlkovskii(pf)
+Gal = Pbdot_Gal(pf)
+GW = Pbdot_GW(pf)
+Pbdot_exc_1738 = float(pf.PBDOT[0]) - Gal[0] - Shl[0] - GW[0]
+Pbdot_Shl = Shl[0]
+Pbdot_Shl_err = Shl[1]
+Pbdot_Gal_val = Gal[0]
+Pbdot_Gal_err = Gal[1]
+Pbdot_exc_err = sqrt(float(pf.PBDOT[1])**2 + Gal[1]**2 + Shl[1]**2 + GW[1]**2)
+
+PbdOPb1738 = Pbdot_exc_1738/float(pf.PB[0])/secperday
 #PbdOPb0437 = 3.2e-19
 #PbdOPberr1738 = float(pf.PBDOT[1]) /float(pf.PB[0])/secperday #2sigma 95 error bar needs to be reduced to 1 sigam
+print 'Compare:', 3.2e-19, PbdOPb1738
 PbdOPberr1738 = 3.65e-15/ float(pf.PB[0])/secperday #Freire et al .2012
+print 'Freire error:', PbdOPberr1738, 
+#PbdOPberr1738 = Pbdot_exc_err / float(pf.PB[0])/secperday #Freire et al .2012
+#print 'my error:', PbdOPberr1738 
 
-print '1738:', PbdOPb1738* float(pf.PB[0])*secperday, PbdOPberr1738 * float(pf.PB[0])*secperday
+print '1738:', Pbdot_exc_1738/float(pf.PB[0])/secperday , Pbdot_exc_err/float(pf.PB[0])/secperday 
 
 #pf = PARfile('./1909-3744.par')
 pf = PARfile('./J1909.zww.par')
 pf.PBDOT[0] = pf.PBDOT[0]*Decimal('1.e-12')
 pf.PBDOT[1] = pf.PBDOT[1]*Decimal('1.e-12')
 J1909 = {'M1':M1(pf), 'M2':float(pf.M2[0]), 'Sp':Sp(pf) , 'Pb':float(pf.PB[0])*secperday}
-PbdOPb1909 = float(pf.PBDOT[0] -Pbdot_Gal(pf)-Decimal(Shlkovskii(pf))-Pbdot_GW(pf) )/float(pf.PB[0])/secperday
-PbdOPberr1909 = float(pf.PBDOT[1]/ pf.PB[0]/secperday) #Freire et al .2012
-print '1909:', PbdOPb1909 * float(pf.PB[0])*secperday, PbdOPberr1909 * float(pf.PB[0])*secperday
 
 
-#sys.exit(0)
+Shl = Shlkovskii(pf)
+Gal = Pbdot_Gal(pf)
+GW = Pbdot_GW(pf)
+Pbdot_exc_1909 = float(pf.PBDOT[0]) - Gal[0] - Shl[0] - GW[0]
+Pbdot_Shl = Shl[0]
+Pbdot_Shl_err = Shl[1]
+Pbdot_Gal_val = Gal[0]
+Pbdot_Gal_err = Gal[1]
+Pbdot_exc_err = sqrt(float(pf.PBDOT[1])**2 + Gal[1]**2 + Shl[1]**2 + GW[1]**2)
+
+PbdOPb1909 = Pbdot_exc_1909/float(pf.PB[0])/secperday
+
+PbdOPberr1909 = Pbdot_exc_err/ float(pf.PB[0])/secperday #Freire et al .2012
+print '1909:', Pbdot_exc_1909, Pbdot_exc_err
+
+
+sys.exit(0)
 
 from scipy.stats import chisqprob
 from math import *
@@ -144,8 +173,8 @@ import scipy.optimize
 
 def chisqfunc(x):
     GdotOG, KD = x
-    #return (Pbdot_exc(J1713, GdotOG, KD) - PbdOPb1713)**2/PbdOPberr1713**2 + (Pbdot_exc(J1012, GdotOG, KD) - PbdOPb1012)**2/PbdOPberr1012**2 + (Pbdot_exc(J0437, GdotOG, KD) - PbdOPb0437)**2/PbdOPberr0437**2 + (Pbdot_exc(J1738, GdotOG, KD) - PbdOPb1738)**2/PbdOPberr1738**2
-    chisq = (Pbdot_exc(J1713, GdotOG, KD) - PbdOPb1713)**2/PbdOPberr1713**2 + (Pbdot_exc(J1012, GdotOG, KD) - PbdOPb1012)**2/PbdOPberr1012**2 + (Pbdot_exc(J0437, GdotOG, KD) - PbdOPb0437)**2/PbdOPberr0437**2 + (Pbdot_exc(J1738, GdotOG, KD) - PbdOPb1738)**2/PbdOPberr1738**2 + (Pbdot_exc(J1909, GdotOG, KD) - PbdOPb1909)**2/PbdOPberr1909**2 
+    chisq = (Pbdot_exc(J1713, GdotOG, KD) - PbdOPb1713)**2/PbdOPberr1713**2 + (Pbdot_exc(J1012, GdotOG, KD) - PbdOPb1012)**2/PbdOPberr1012**2 + (Pbdot_exc(J0437, GdotOG, KD) - PbdOPb0437)**2/PbdOPberr0437**2 + (Pbdot_exc(J1738, GdotOG, KD) - PbdOPb1738)**2/PbdOPberr1738**2
+    #chisq = (Pbdot_exc(J1713, GdotOG, KD) - PbdOPb1713)**2/PbdOPberr1713**2 + (Pbdot_exc(J1012, GdotOG, KD) - PbdOPb1012)**2/PbdOPberr1012**2 + (Pbdot_exc(J0437, GdotOG, KD) - PbdOPb0437)**2/PbdOPberr0437**2 + (Pbdot_exc(J1738, GdotOG, KD) - PbdOPb1738)**2/PbdOPberr1738**2 + (Pbdot_exc(J1909, GdotOG, KD) - PbdOPb1909)**2/PbdOPberr1909**2 
     return chisq
 
 x0 = (4.13334198e-13,  -7.53847999e-05)
@@ -159,10 +188,11 @@ def probcal(GdotOG, KD):
     #chisq = (Pbdot_exc(J1713, GdotOG, KD) - PbdOPb1713)**2/PbdOPberr1713**2 + (Pbdot_exc(J1012, GdotOG, KD) - PbdOPb1012)**2/PbdOPberr1012**2 
     #chisq = (Pbdot_exc(J1012, GdotOG, KD) - PbdOPb1012)**2/PbdOPberr1012**2 + (Pbdot_exc(J0437, GdotOG, KD) - PbdOPb0437)**2/PbdOPberr0437**2
     #chisq = (Pbdot_exc(J1713, GdotOG, KD) - PbdOPb1713)**2/PbdOPberr1713**2 + (Pbdot_exc(J1012, GdotOG, KD) - PbdOPb1012)**2/PbdOPberr1012**2 + (Pbdot_exc(J0437, GdotOG, KD) - PbdOPb0437)**2/PbdOPberr0437**2
-    """
-    #chisq = (Pbdot_exc(J1713, GdotOG, KD) - PbdOPb1713)**2/PbdOPberr1713**2 + (Pbdot_exc(J1012, GdotOG, KD) - PbdOPb1012)**2/PbdOPberr1012**2 + (Pbdot_exc(J0437, GdotOG, KD) - PbdOPb0437)**2/PbdOPberr0437**2 + (Pbdot_exc(J1738, GdotOG, KD) - PbdOPb1738)**2/PbdOPberr1738**2
-    """#1713, 0437, 1738, 1012
-    chisq = (Pbdot_exc(J1713, GdotOG, KD) - PbdOPb1713)**2/PbdOPberr1713**2 + (Pbdot_exc(J1012, GdotOG, KD) - PbdOPb1012)**2/PbdOPberr1012**2 + (Pbdot_exc(J0437, GdotOG, KD) - PbdOPb0437)**2/PbdOPberr0437**2 + (Pbdot_exc(J1738, GdotOG, KD) - PbdOPb1738)**2/PbdOPberr1738**2 + (Pbdot_exc(J1909, GdotOG, KD) - PbdOPb1909)**2/PbdOPberr1909**2 
+    #"""
+    chisq = (Pbdot_exc(J1713, GdotOG, KD) - PbdOPb1713)**2/PbdOPberr1713**2 + (Pbdot_exc(J1012, GdotOG, KD) - PbdOPb1012)**2/PbdOPberr1012**2 + (Pbdot_exc(J0437, GdotOG, KD) - PbdOPb0437)**2/PbdOPberr0437**2 + (Pbdot_exc(J1738, GdotOG, KD) - PbdOPb1738)**2/PbdOPberr1738**2 #1713, 0437, 1738, 1012
+    #"""
+    #chisq = (Pbdot_exc(J1713, GdotOG, KD) - PbdOPb1713)**2/PbdOPberr1713**2 + (Pbdot_exc(J1012, GdotOG, KD) - PbdOPb1012)**2/PbdOPberr1012**2 + (Pbdot_exc(J0437, GdotOG, KD) - PbdOPb0437)**2/PbdOPberr0437**2 + (Pbdot_exc(J1738, GdotOG, KD) - PbdOPb1738)**2/PbdOPberr1738**2 + (Pbdot_exc(J1909, GdotOG, KD) - PbdOPb1909)**2/PbdOPberr1909**2 
+    #"""#1909
     #except:
         #print  GdotOG, KD
         #print J1713, J1012
@@ -170,7 +200,7 @@ def probcal(GdotOG, KD):
         #print f(J1713, GdotOG, KD)  , f(J1012, GdotOG, KD)  
     return exp((minchisq-chisq)/2.)
 
-sys.exit(0)
+#sys.exit(0)
 
 cwd=os.getcwd()
 #best = (-0.7e-12, 0.3e-3)
