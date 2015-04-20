@@ -26,7 +26,8 @@ kpc = 3.0857e21
 
 """load the parfile"""
 #pf = PARfile('mcmcresult.par')
-pf = PARfile('1713.final.par')
+#pf = PARfile('1713.final.par')
+pf = PARfile('Feb.T1.RN.par')
 Eerr = float(pf.E[1])
 OMerr = float(pf.OM[1])/180.*np.pi
 """calculate coordinate transfermation matrix using the parfile"""
@@ -103,14 +104,19 @@ import sys
 #from Coordinate import RA, Dec
 secperday = 24*3600
 
-dic = pickle.load(open('bestpar.p', 'rb'))
-best = dic['BEST']
-plist = dic['parameters'] 
-MChain = pickle.load(open('TinyMChain.p','rb'))
+#dic = pickle.load(open('bestpar.p', 'rb'))
+#best = dic['BEST']
+#plist = dic['parameters'] 
+#MChain = pickle.load(open('TinyMChain.p','rb'))
+plist = open('pars.txt', 'r').readlines()
+pl = [p.strip('\n') for p in plist]
+plist = pl
 #MChain = pickle.load(open('SmallMChain.p','rb'))
 #MChain = pickle.load(open('MChain.p','rb'))
-MarkovChain = MChain['Chain']
-MCMCSize = len(MarkovChain)
+#MarkovChain = MChain['Chain']
+#MCMCSize = len(MarkovChain)
+MarkovChain = np.loadtxt('chain_1.0.txt')
+MCMCSize, cols = MarkovChain.shape
 pi = 3.141592653589793
 G = 6.673e-8
 c = 2.99792458e10
@@ -118,38 +124,75 @@ Msun = 1.9882e33
 twopi = 6.283185307179586
 fac = 1.536e-16 
 Tsun = 4.925490947e-6
-if0 = plist.index('F0')
+#if0 = plist.index('F0')
 im2 = plist.index('M2')
 ipb = plist.index('PB')
-isini = plist.index('SINI')
+#isini = plist.index('SINI')
+ii = plist.index('KIN')
 ia = plist.index('A1')
-ichisq = plist.index('chisq')
-iecc = plist.index('E')
+iecc = plist.index('ECC')
 ipx = plist.index('PX')
+#iomega = plist.index('PAASCNODE')
+iomega = plist.index('KOM')
+iom = plist.index('OM')
 ipmra = plist.index('PMRA')
 ipmdec = plist.index('PMDEC')
-iomega = plist.index('PAASCNODE')
-iom = plist.index('OM')
-M2 = np.array([float(p[im2]) for p in MarkovChain])
-PB = np.array([float(p[ipb])*secperday for p in MarkovChain])
-SINI = np.array([float(p[isini]) for p in MarkovChain])
-A = np.array([float(p[ia]) for p in MarkovChain])
-#print PB, M2, SINI, 
-F0 = np.array([float(p[if0]) for p in MarkovChain])
-M1 = (PB/2/pi*np.sqrt(Tsun*(M2*SINI)**3/A**3)-M2)
-ECC = np.array([float(p[iecc]) for p in MarkovChain])
-PX = np.array([float(p[ipx]) for p in MarkovChain])
-PMRA = np.array([float(p[ipmra]) for p in MarkovChain])
-PMDEC = np.array([float(p[ipmdec]) for p in MarkovChain])
-PAASCNODE = np.array([float(p[iomega]) for p in MarkovChain])
-OM = np.array([float(p[iom]) for p in MarkovChain])
-chisq = [p[ichisq] for p in MarkovChain]
-bestidx = chisq.index(min(chisq))
-w = np.array([ y for y in npr.normal(0., 2900000., MCMCSize)])
+#F0 = np.array([float(p[if0]) for p in MarkovChain])
+M2 = MarkovChain[:,im2]
+PB = secperday * MarkovChain[:,ipb]
+SINI = np.sin(MarkovChain[:,ii]/180.*np.pi)
+OM = MarkovChain[:,iom]
+a =  MarkovChain[:, ia]
+#M1 = (PB/2/pi*np.sqrt(G*(M2*SINI)**3/a**3)-M2)#/Msun
+M1 = PB/2/pi*(np.sqrt(Tsun*(M2*SINI)**3/a**3))-M2
+M2 = M2#/Msun
+ECC = MarkovChain[:,iecc]
+PX = MarkovChain[:,ipx]
+PAASCNODE = MarkovChain[:,iomega]
+PMRA = MarkovChain[:,ipmra]
+PMDEC = MarkovChain[:,ipmdec]
+#if0 = plist.index('F0')
+#im2 = plist.index('M2')
+#ipb = plist.index('PB')
+#isini = plist.index('SINI')
+#ia = plist.index('A1')
+#ichisq = plist.index('chisq')
+#iecc = plist.index('E')
+#ipx = plist.index('PX')
+#iomega = plist.index('PAASCNODE')
+#iom = plist.index('OM')
+#M2 = np.array([float(p[im2]) for p in MarkovChain])
+#PB = np.array([float(p[ipb])*secperday for p in MarkovChain])
+#SINI = np.array([float(p[isini]) for p in MarkovChain])
+#A = np.array([float(p[ia]) for p in MarkovChain])
+##print PB, M2, SINI, 
+#F0 = np.array([float(p[if0]) for p in MarkovChain])
+#M1 = (PB/2/pi*np.sqrt(Tsun*(M2*SINI)**3/A**3)-M2)
+#ECC = np.array([float(p[iecc]) for p in MarkovChain])
+#PX = np.array([float(p[ipx]) for p in MarkovChain])
+#PMRA = np.array([float(p[ipmra]) for p in MarkovChain])
+#PMDEC = np.array([float(p[ipmdec]) for p in MarkovChain])
+#PAASCNODE = np.array([float(p[iomega]) for p in MarkovChain])
+#OM = np.array([float(p[iom]) for p in MarkovChain])
+#chisq = [p[ichisq] for p in MarkovChain]
+#bestidx = chisq.index(min(chisq))
+Dmean = 1/PX.mean()
+wy_m = PMRA.mean()*1.e-3/60./60.*np.pi/180./secperyear * Dmean 
+wz_m = PMDEC.mean()*1.e-3/60./60.*np.pi/180./secperyear * Dmean 
+w_m = np.sqrt(wy_m**2 + wz_m**2) * kpc
+#print 'mean proper motion', w_m * kpc
+w = np.array([ y for y in npr.normal(0., w_m, MCMCSize)])
+F0 = float(pf.F0[0])
+
+#print SINI.mean()
+#print M1.mean()
+#print M2.mean()
+#sys.exit(0)
 
 def Integ(alpha):
     global M1, M2, PB, F0, ECC, PMRA, PMDEC, PX, SINI, PAASCNODE, OM, w
-    pres = np.array([Pintegrant(M1[i], M2[i], PB[i], F0[i], ECC[i], PMRA[i], PMDEC[i], PX[i], SINI[i], PAASCNODE[i], OM[i], w[i]) for i in range(len(w))])
+    #pres = np.array([Pintegrant(M1[i], M2[i], PB[i], F0[i], ECC[i], PMRA[i], PMDEC[i], PX[i], SINI[i], PAASCNODE[i], OM[i], w[i]) for i in range(len(w))])
+    pres = np.array([Pintegrant(M1[i], M2[i], PB[i], F0, ECC[i], PMRA[i], PMDEC[i], PX[i], SINI[i], PAASCNODE[i], OM[i], w[i]) for i in range(len(w))])
     THETA = 1.* pres[...,0]
     EF = alpha * pres[...,1]
     Area1 = sum(EccArea(ECC, EF, THETA))
@@ -161,7 +204,7 @@ def Integ(alpha):
 alpha = np.arange(5.e-22, 1.e-19, 5.e-22) #ingrid setting
 res = np.array([Integ(a) for a in alpha])
 
-np.save(open('alpha3.npy', 'wb'), res)
+np.save(open('alpha3_jae.npy', 'wb'), res)
 
 cdf = [res[0]]
 for r in res[1:]:

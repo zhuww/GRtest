@@ -27,7 +27,8 @@ R0 = solardist
 #pf = PARfile('1713.Dec.mcmc.par')
 #pf = PARfile('mcmcresult.par')
 #pf = PARfile('1713.sns.par')
-pf = PARfile('1713.final.par')
+#pf = PARfile('1713.final.par')
+pf = PARfile('Feb.T1.RN.par')
 
 """read some information from the parfile"""
 gl, gb = getGpos(pf)
@@ -100,6 +101,7 @@ def Pintegrant(PX, SINI, PAASCNODE, M1, M2, PB, ECC, OM, Delta):
     R1 = np.sqrt(R0**2 + (D*np.cos(gb))**2 -2 * R0 * D * np.cos(gb) * np.cos(gl))
     coszeta = (R0**2 + R1**2 - D**2 + z**2)/R0/R1/2.
     zeta = np.arccos(coszeta)
+    #print R1.size, zeta.size, z.size
 
     Mtot =  M1 + M2
     #Omega_G = 27.2 #km s^-1 kpc^-1
@@ -110,6 +112,7 @@ def Pintegrant(PX, SINI, PAASCNODE, M1, M2, PB, ECC, OM, Delta):
     THETA = []
     for i,sini in enumerate(SINI):
         theta, kg= getKG(Kr[i], zeta[i], z[i], sini, PAASCNODE[i], OM[i])
+        #theta, kg= getKG(Kr, zeta, z, sini, PAASCNODE[i], OM[i])
         THETA.append(theta)
         #THETA.append(np.abs(theta-np.pi))
         KGarray.append(kg)
@@ -130,20 +133,20 @@ import cPickle as pickle
 import sys
 secperday = 24*3600
 
-dic = pickle.load(open('bestpar.p', 'rb'))
-best = dic['BEST']
-plist = dic['parameters'] 
-#plist = open('no_omdot_nonlinear_powerlaw/pars.txt', 'r').readlines()
-#pl = [p.strip('\n') for p in plist]
-#plist = pl
-MChain = pickle.load(open('TinyMChain.p','rb'))
+#dic = pickle.load(open('bestpar.p', 'rb'))
+#best = dic['BEST']
+#plist = dic['parameters'] 
+plist = open('pars.txt', 'r').readlines()
+pl = [p.strip('\n') for p in plist]
+plist = pl
+#MChain = pickle.load(open('TinyMChain.p','rb'))
 #MChain = pickle.load(open('SmallMChain.p','rb'))
-MarkovChain = MChain['Chain']
-#MarkovChain = np.loadtxt('no_omdot_nonlinear_powerlaw/chain_1.0.txt')
-#MCMCSize, cols = MarkovChain.shape
+#MarkovChain = MChain['Chain']
+MarkovChain = np.loadtxt('chain_1.0.txt')
+MCMCSize, cols = MarkovChain.shape
 #MChain = pickle.load(open('MChain.p','rb'))
 #MarkovChain = MChain['Chain']
-MCMCSize = len(MarkovChain)
+#MCMCSize = len(MarkovChain)
 pi = 3.141592653589793
 twopi = 6.283185307179586
 G = 6.673e-8
@@ -151,35 +154,51 @@ c = 2.99792458e10
 Msun = 1.9882e33
 im2 = plist.index('M2')
 ipb = plist.index('PB')
-isini = plist.index('SINI')
-#ii = plist.index('KIN')
+#isini = plist.index('SINI')
+ii = plist.index('KIN')
 ia = plist.index('A1')
-iecc = plist.index('E')
+iecc = plist.index('ECC')
 ipx = plist.index('PX')
-iomega = plist.index('PAASCNODE')
-#iomega = plist.index('KOM')
+#iomega = plist.index('PAASCNODE')
+iomega = plist.index('KOM')
 iom = plist.index('OM')
-ichisq = plist.index('chisq')
-M2 = np.array([float(p[im2])*Msun for p in MarkovChain])
-PB = np.array([float(p[ipb])*secperday for p in MarkovChain])
-SINI = np.array([float(p[isini]) for p in MarkovChain])
-OM = np.array([float(p[iom]) for p in MarkovChain])
-a = np.array([float(p[ia])*c for p in MarkovChain])
-M1 = (PB/2/pi*np.sqrt(G*(M2*SINI)**3/a**3)-M2)/Msun
-M2 = M2/Msun
-ECC = np.array([float(p[iecc]) for p in MarkovChain])
-PX = np.array([float(p[ipx]) for p in MarkovChain])
-PAASCNODE = np.array([float(p[iomega]) for p in MarkovChain])
-chisq = [p[ichisq] for p in MarkovChain]
-bestidx = chisq.index(min(chisq))
+#ichisq = plist.index('chisq')
+#M2 = np.array([float(p[im2])*Msun for p in MarkovChain])
+#PB = np.array([float(p[ipb])*secperday for p in MarkovChain])
+#SINI = np.sin(np.array([float(p[ii]) for p in MarkovChain]))
+#OM = np.array([float(p[iom]) for p in MarkovChain])
+#a = np.array([float(p[ia])*c for p in MarkovChain])
+#M1 = (PB/2/pi*np.sqrt(G*(M2*SINI)**3/a**3)-M2)/Msun
+#M2 = M2/Msun
+#ECC = np.array([float(p[iecc]) for p in MarkovChain])
+#PX = np.array([float(p[ipx]) for p in MarkovChain])
+#PAASCNODE = np.array([float(p[iomega]) for p in MarkovChain])
+#chisq = [p[ichisq] for p in MarkovChain]
+#bestidx = chisq.index(min(chisq))
+M2 = MarkovChain[:,im2]
+PB = secperday * MarkovChain[:,ipb]
+SINI = np.sin(MarkovChain[:,ii]/180.*np.pi)
+OM = MarkovChain[:,iom]
+a =  MarkovChain[:, ia]
+#M1 = (PB/2/pi*np.sqrt(G*(M2*SINI)**3/a**3)-M2)#/Msun
+M1 = PB/2/pi*(np.sqrt(Tsun*(M2*SINI)**3/a**3))-M2
+M2 = M2#/Msun
+ECC = MarkovChain[:,iecc]
+PX = MarkovChain[:,ipx]
+#PX = float(pf.PX)
+PAASCNODE = MarkovChain[:,iomega]
 
+#print sini.mean()
+#print M1.mean()
+#print M2.mean()
+#sys.exit(0)
 
 """Calculate and plot the pdf """
 Integ = lambda d: Pintegrant(PX, SINI, PAASCNODE, M1, M2, PB, ECC, OM, d)
 delta = np.arange(5.e-5, 0.03, 5.e-5) #ingrid setting
 res = np.array([Integ(d) for d in delta])
 
-np.save(open('SEPresult.npy', 'wb'), res)
+np.save(open('SEPjae.npy', 'wb'), res)
 
 cdf = [res[0]]
 for r in res[1:]:

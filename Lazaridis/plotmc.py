@@ -6,7 +6,9 @@ import pickle
 from matplotlib.ticker import NullFormatter
 from mpl_toolkits.axes_grid1 import make_axes_locatable
 import scipy.optimize as opt
+from datatools.tempo import initmatplotlib
 
+initmatplotlib(cols=1)
 
 
 MChain = pickle.load(open('MChain.p', 'r'))['Chain']
@@ -15,6 +17,10 @@ best = pickle.load(open('bestpar.p', 'r'))['BEST']
 MChain = np.array(MChain)
 x = MChain[:,0]
 y = MChain[:,1]
+x = np.array(x)
+x *=1.e12
+y = np.array(y)
+y *=1.e4
 #print x.shape, y.shape
 #print x
 #print y
@@ -36,8 +42,8 @@ for i in range(1, len(xed)):
 
 from scipy import stats
 
-xkde = stats.gaussian_kde(x)
-ykde = stats.gaussian_kde(y)
+#xkde = stats.gaussian_kde(x)
+#ykde = stats.gaussian_kde(y)
 
 from numpy import *
 
@@ -94,64 +100,85 @@ def trisig(lev):
 
 #print onesig(50000), twosig(10000), trisig(10000)
 
-levels = opt.bisect(onesig, 1, 100000), opt.bisect(twosig, 1, 50000), opt.bisect(trisig, 1, 10000)
-
+#levels = opt.bisect(onesig, 1, 100000), opt.bisect(twosig, 1, 50000), opt.bisect(trisig, 1, 10000)
+levels = opt.bisect(onesig, 1, 100000), opt.bisect(twosig, 1, 50000)#, opt.bisect(trisig, 1, 10000)
+levellabel = {levels[0]:'68%', levels[1]:'95%'}
 #sys.exit(0)
 
 #print levels
-def fomt(x, i=[0]):
-    i[0]+=1
-    return '%s$\sigma$' % (i[0]/2)
+def fomt(x):
+    #return '%s$\sigma$' % (i[0]/2)
+    #lbs = ['99.7%%', '95%%', '68%%' ] * 3
+    return levellabel[x]
 
 #levels = [500, 1000., 1500]
-axScatter.imshow(H, extent=extent, aspect='auto', interpolation='bicubic', cmap=cm.get_cmap(cmap, len(levels)-1))
+#axScatter.imshow(H, extent=extent, aspect='auto', interpolation='bicubic', cmap=cm.get_cmap(cmap, len(levels)-1))
 #axScatter.imshow(H)
 CS = axScatter.contour(xbin,ybin, H, levels=levels)
-clabel(CS, inline=1, fmt=fomt)
+clabel(CS, inline=1, fmt=fomt, manual=True)
 #print H.min(), H.max()
 #axScatter.set_aspect(1.)
-xlabel('$\dot{G}/G$')
-ylabel('$\kappa_D$')
+xlabel(r'$\dot{G}/G [10^{-12}{\rm yr}^{-1}]$')
+ylabel('$\kappa_D[10^{-4}]$')
 
-divider = make_axes_locatable(axScatter)
-axHistx = divider.append_axes("top", 1.2, pad=0.1, sharex = axScatter)
-axHisty = divider.append_axes("right", 1.2, pad=0.1, sharey = axScatter)
+axScatter.axvline(0, linestyle='--', color='k')
+axScatter.axhline(0, linestyle='--', color='k')
+#axScatter.axvspan((-0.7-7.6)/10, (-0.7+7.6)/10, facecolor='0.5', alpha=0.3, linewidth=2)
+axScatter.axvspan((-0.7-7.6)/10, (-0.7+7.6)/10, fill=False, hatch='/', linewidth=2)
 
-plt.setp(axHistx.get_xticklabels() + axHisty.get_yticklabels(), visible=False)
+axScatter.plot([0.], [0.], 'ro', ms=10)
+axScatter.text(0.,0.,'GR',color='r',fontsize=28)
+
+axScatter.set_xlim([-2.,2.])
+axScatter.set_ylim([-6,6])
+#divider = make_axes_locatable(axScatter)
+#axHistx = divider.append_axes("top", 1.2, pad=0.1, sharex = axScatter)
+#axHisty = divider.append_axes("right", 1.2, pad=0.1, sharey = axScatter)
+
+#plt.setp(axHistx.get_xticklabels() + axHisty.get_yticklabels(), visible=False)
 
 # now determine nice limits by hand:
-Nbins = 20
-xmax = np.max(np.fabs(x))
-ymax = np.max(np.fabs(y))
-xbinwidth = 2*xmax/Nbins
-ybinwidth = 2*ymax/Nbins
-xlim = ( int(xmax/xbinwidth) + 1) * xbinwidth
-ylim = ( int(ymax/ybinwidth) + 1) * ybinwidth
+#Nbins = 20
+#xmax = np.max(np.fabs(x))
+#ymax = np.max(np.fabs(y))
+#xbinwidth = 2*xmax/Nbins
+#ybinwidth = 2*ymax/Nbins
+#xlim = ( int(xmax/xbinwidth) + 1) * xbinwidth
+#ylim = ( int(ymax/ybinwidth) + 1) * ybinwidth
 
-axScatter.set_xlim( (-xlim, xlim) )
-axScatter.set_ylim( (-ylim, ylim) )
+#axScatter.set_xlim( (-xlim, xlim) )
+#axScatter.set_ylim( (-ylim, ylim) )
 
-xbins = np.arange(-xlim, xlim + xbinwidth, xbinwidth)
-ybins = np.arange(-ylim, ylim + ybinwidth, ybinwidth)
-axHistx.hist(x, bins=xbins, normed=1)
-axHisty.hist(y, bins=ybins, orientation='horizontal', normed=1)
-axHistx.plot(xbins,xkde.evaluate(xbins),'r-')
-axHisty.plot(ykde.evaluate(ybins),ybins,'r-')
-axHistx.plot(xbins,xpdf.pdf(xbins),'g-')
-axHisty.plot(ypdf.pdf(ybins),ybins,'g-')
+#xbins = np.arange(-xlim, xlim + xbinwidth, xbinwidth)
+#ybins = np.arange(-ylim, ylim + ybinwidth, ybinwidth)
+#axHistx.hist(x, bins=xbins, normed=1)
+#axHisty.hist(y, bins=ybins, orientation='horizontal', normed=1)
+#axHistx.plot(xbins,xkde.evaluate(xbins),'r-')
+#axHisty.plot(ykde.evaluate(ybins),ybins,'r-')
+#axHistx.plot(xbins,xpdf.pdf(xbins),'g-')
+#axHisty.plot(ypdf.pdf(ybins),ybins,'g-')
 
-axHistx.set_xlim( axScatter.get_xlim() )
-axHisty.set_ylim( axScatter.get_ylim() )
+#axHistx.set_xlim( axScatter.get_xlim() )
+#axHisty.set_ylim( axScatter.get_ylim() )
 
-for t1 in axHistx.get_xticklabels():
-    t1.set_visible(False)
-axHistx.set_yticks([0])
-for t1 in axHisty.get_yticklabels():
-    t1.set_visible(False)
-axHisty.set_xticks([0])
+#for t1 in axHistx.get_xticklabels():
+    #t1.set_visible(False)
+#axHistx.set_yticks([0])
+#for t1 in axHisty.get_yticklabels():
+    #t1.set_visible(False)
+#axHisty.set_xticks([0])
 
 plt.draw()
 plt.show()
 
 from round import shortform as SF
-print SF((xm,xsigma)), SF((ym, ysigma))
+from round import TexStyle as TS
+print TS((xm,2*xsigma)), TS((ym, 2*ysigma))
+secperday = 24*3600
+secperyear = secperday * 365.24218967
+H0 = 67.80 #+/- 0.77 km/s/Mpc Planck
+Mpc_in_km  = 3.08568e19
+T_Hubble = Mpc_in_km/H0/secperyear  #year
+print T_Hubble
+print 'factor of change  in Hubble time:', T_Hubble * (xm+3*xsigma)*1.e-12
+
