@@ -6,7 +6,9 @@ import pickle
 from matplotlib.ticker import NullFormatter
 from mpl_toolkits.axes_grid1 import make_axes_locatable
 import scipy.optimize as opt
+from datatools.tempo import initmatplotlib
 
+initmatplotlib(cols=1)
 
 
 MChain = pickle.load(open('MChain.p', 'r'))['Chain']
@@ -116,8 +118,8 @@ CS = axScatter.contour(xbin,ybin, H, levels=levels)
 clabel(CS, inline=1, fmt=fomt, manual=True)
 #print H.min(), H.max()
 #axScatter.set_aspect(1.)
-xlabel(r'$\dot{G}/G [10^{-12}{\rm yr}^{-1}]$')
-ylabel('$\kappa_D[10^{-4}]$')
+xlabel(r'$\dot{G}/G [10^{-12}{\rm yr}^{-1}]$', fontsize=24)
+ylabel('$\kappa_D[10^{-4}]$', fontsize=24)
 
 axScatter.axvline(0, linestyle='--', color='k')
 axScatter.axhline(0, linestyle='--', color='k')
@@ -129,6 +131,11 @@ axScatter.text(0.,0.,'GR',color='r',fontsize=28)
 
 axScatter.set_xlim([-2.,2.])
 axScatter.set_ylim([-6,6])
+
+axScatter.xaxis.set_tick_params(size=10)
+axScatter.yaxis.set_tick_params(size=10)
+axScatter.xaxis.set_tick_params(labelsize=20)
+axScatter.yaxis.set_tick_params(labelsize=20)
 #divider = make_axes_locatable(axScatter)
 #axHistx = divider.append_axes("top", 1.2, pad=0.1, sharex = axScatter)
 #axHisty = divider.append_axes("right", 1.2, pad=0.1, sharey = axScatter)

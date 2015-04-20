@@ -25,7 +25,8 @@ secperyear = secperday*365.24218967
 kpc = 3.0857e21
 
 """load the parfile"""
-pf = PARfile('mcmcresult.par')
+#pf = PARfile('mcmcresult.par')
+pf = PARfile('1713.final.par')
 Eerr = float(pf.E[1])
 OMerr = float(pf.OM[1])/180.*np.pi
 """calculate coordinate transfermation matrix using the parfile"""

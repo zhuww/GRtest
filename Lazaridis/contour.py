@@ -3,14 +3,17 @@ import os,sys
 from psrpbdot import Pbdot_Gal, Shlkovskii, Decimal, Pbdot_GW
 from psrpbdot import M1 as DM1
 from round import TexStyle as SF
+from astropy import constants as const
 
 
 c = 2.99792458e10
 PI = pi
-AU = 1.469e13
-Msun = 1.9882e33
+AU = const.au.cgs.value #1.469e13
+Msun = const.M_sun.cgs.value #1.9882e33
 secperday = 24*3600
 Tsun = 4.925490947e-6
+c = const.c.cgs.value
+kpc = const.kpc.cgs.value
 
 def M1(pf):
     return float(DM1(pf))
@@ -39,7 +42,11 @@ from datatools.tempo import tempofit, tempo2fit, touchparfile, uniquename, PARfi
 #pf = PARfile('./1713.Oct.mcmc.par')
 #pf = PARfile('./1713.Nov.test.par')
 #pf = PARfile('./mcmc.par')
-pf = PARfile('./mcmcresult.par')
+#pf = PARfile('./mcmcresult.par')
+#pf = PARfile('./J1713+0747.par')
+#pf = PARfile('./1713.final.par')
+#pf = PARfile('./Oct.T2.par')
+pf = PARfile('./Feb.T2.RN.par')
 
 
 def Pbdot_exc(psr, GdotOG, KD):
@@ -134,8 +141,8 @@ print 'Freire error:', PbdOPberr1738,
 
 print '1738:', Pbdot_exc_1738/float(pf.PB[0])/secperday , Pbdot_exc_err/float(pf.PB[0])/secperday 
 
-#pf = PARfile('./1909-3744.par')
-pf = PARfile('./J1909.zww.par')
+pf = PARfile('./1909-3744.par')
+#pf = PARfile('./J1909.zww.par')
 pf.PBDOT[0] = pf.PBDOT[0]*Decimal('1.e-12')
 pf.PBDOT[1] = pf.PBDOT[1]*Decimal('1.e-12')
 J1909 = {'M1':M1(pf), 'M2':float(pf.M2[0]), 'Sp':Sp(pf) , 'Pb':float(pf.PB[0])*secperday}
@@ -157,7 +164,7 @@ PbdOPberr1909 = Pbdot_exc_err/ float(pf.PB[0])/secperday #Freire et al .2012
 print '1909:', Pbdot_exc_1909, Pbdot_exc_err
 
 
-sys.exit(0)
+#sys.exit(0)
 
 from scipy.stats import chisqprob
 from math import *

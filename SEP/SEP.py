@@ -24,8 +24,9 @@ R0 = solardist
 
 """load the parfile"""
 #pf = PARfile('1713.Dec.mcmc.par')
-pf = PARfile('mcmcresult.par')
+#pf = PARfile('mcmcresult.par')
 #pf = PARfile('1713.sns.par')
+pf = PARfile('1713.final.par')
 
 """read some information from the parfile"""
 gl, gb = getGpos(pf)
