@@ -18,9 +18,9 @@ solardist = 8.34
 def getGpos(pf):
     ra = COORD.RA(pf.RAJ[0])
     dec = COORD.Dec(pf.DECJ[0])
-    pos = coord.FK5Coordinates(str(ra) +' '+ str(dec))
-    l = pos.galactic.l.radians
-    b = pos.galactic.b.radians
+    pos = coord.SkyCoord(str(ra) +' '+ str(dec))
+    l = pos.galactic.l.rad
+    b = pos.galactic.b.rad
     return l,b
 
 def GetTransferMatrix(pf):
@@ -31,12 +31,12 @@ def GetTransferMatrix(pf):
     y = solardist - D * np.cos(gb) * np.cos(gl) 
     angle = np.arctan(y/x)*180./np.pi
 
-    GCpos = coord.FK5Coordinates('17h45m40.04s -29d00m28.1s')
-    pos1713 = coord.FK5Coordinates(str(COORD.RA(pf.RAJ[0]))+' '+str(COORD.Dec(pf.DECJ[0])))
-    RA = pos1713.ra.radians
-    Dec = pos1713.dec.radians
-    DRA = pos1713.ra.radians - GCpos.ra.radians
-    DDec = pos1713.dec.radians - GCpos.dec.radians
+    GCpos = coord.SkyCoord('17h45m40.04s -29d00m28.1s')
+    pos1713 = coord.SkyCoord(str(COORD.RA(pf.RAJ[0]))+' '+str(COORD.Dec(pf.DECJ[0])))
+    RA = pos1713.ra.rad
+    Dec = pos1713.dec.rad
+    DRA = pos1713.ra.rad - GCpos.ra.rad
+    DDec = pos1713.dec.rad - GCpos.dec.rad
     Omega = float(pf.PAASCNODE)/180.*np.pi
     Theta_g = np.pi - np.arctan(np.tan(DRA)/np.sin(DDec))
     """
@@ -45,8 +45,8 @@ def GetTransferMatrix(pf):
     # 2. rotate to the plane of the sky
     #two angles: alpha, beta; alpha = Ra - pi/2, beta = dec
     """
-    RA = pos1713.ra.radians
-    Dec = pos1713.dec.radians
+    RA = pos1713.ra.rad
+    Dec = pos1713.dec.rad
     alpha =  np.pi + RA
     beta = Dec
     #print 'RA + 180., Dec: ', alpha/np.pi*180, beta/np.pi*180
@@ -63,10 +63,10 @@ def GetTransferMatrix(pf):
     # 2. Galactic pole is (cos Rp cos Dp, sin Rp cos Dp, sin Dp)
     #two angles: alpha, beta; alpha = Ra - pi/2, beta = dec
     """
-    GPpos = coord.FK5Coordinates('12h51m26.282s' +' '+ '27d07m42.01s')
-    #print Galactic_pol.galactic.l.radians/np.pi, Galactic_pol.galactic.b.radians/np.pi
-    Rc, Dc = GCpos.ra.radians, GCpos.dec.radians
-    Rp, Dp = GPpos.ra.radians, GPpos.dec.radians
+    GPpos = coord.SkyCoord('12h51m26.282s' +' '+ '27d07m42.01s')
+    #print Galactic_pol.galactic.l.rad/np.pi, Galactic_pol.galactic.b.rad/np.pi
+    Rc, Dc = GCpos.ra.rad, GCpos.dec.rad
+    Rp, Dp = GPpos.ra.rad, GPpos.dec.rad
     Gc = np.matrix((np.cos(Rc)*np.cos(Dc),np.sin(Rc)*np.cos(Dc),np.sin(Dc))).T
     Gp = np.matrix((np.cos(Rp)*np.cos(Dp), np.sin(Rp)*np.cos(Dp), np.sin(Dp))).T
     #Gmat = np.vstack((Gp, Gc, np.matrix((1,1,1))))
@@ -108,13 +108,13 @@ if __name__ == '__main__':
     y = solardist - D * np.cos(gb) * np.cos(gl) 
     angle = np.arctan(y/x)*180./np.pi
 
-    GCpos = coord.FK5Coordinates('17h45m40.04s -29d00m28.1s')
-    pos1713 = coord.FK5Coordinates(str(COORD.RA(pf.RAJ[0]))+' '+str(COORD.Dec(pf.DECJ[0])))
+    GCpos = coord.SkyCoord('17h45m40.04s -29d00m28.1s')
+    pos1713 = coord.SkyCoord(str(COORD.RA(pf.RAJ[0]))+' '+str(COORD.Dec(pf.DECJ[0])))
 
-    RA = pos1713.ra.radians
-    Dec = pos1713.dec.radians
-    DRA = pos1713.ra.radians - GCpos.ra.radians
-    DDec = pos1713.dec.radians - GCpos.dec.radians
+    RA = pos1713.ra.rad
+    Dec = pos1713.dec.rad
+    DRA = pos1713.ra.rad - GCpos.ra.rad
+    DDec = pos1713.dec.rad - GCpos.dec.rad
     Omega = float(pf.PAASCNODE)/180.*np.pi
     Theta_g = np.pi - np.arctan(np.tan(DRA)/np.sin(DDec))
 

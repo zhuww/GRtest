@@ -115,7 +115,7 @@ def fomt(x):
 #axScatter.imshow(H, extent=extent, aspect='auto', interpolation='bicubic', cmap=cm.get_cmap(cmap, len(levels)-1))
 #axScatter.imshow(H)
 CS = axScatter.contour(xbin,ybin, H, levels=levels)
-clabel(CS, inline=1, fmt=fomt, manual=True)
+clabel(CS, inline=1, fmt=fomt, manual=True, fontsize=20)
 #print H.min(), H.max()
 #axScatter.set_aspect(1.)
 xlabel(r'$\dot{G}/G [10^{-12}{\rm yr}^{-1}]$', fontsize=24)
@@ -123,8 +123,8 @@ ylabel('$\kappa_D[10^{-4}]$', fontsize=24)
 
 axScatter.axvline(0, linestyle='--', color='k')
 axScatter.axhline(0, linestyle='--', color='k')
-#axScatter.axvspan((-0.7-7.6)/10, (-0.7+7.6)/10, facecolor='0.5', alpha=0.3, linewidth=2)
-axScatter.axvspan((-0.7-7.6)/10, (-0.7+7.6)/10, fill=False, hatch='/', linewidth=2)
+axScatter.axvspan(( 0.009-0.182), (0.009+0.182), facecolor='0.5', alpha=0.3, linewidth=2) #Fienga et al. 2014
+axScatter.axvspan((-0.7-7.6)/10, (-0.7+7.6)/10, fill=False, hatch='/', linewidth=2) #Freire et al. 2012
 
 axScatter.plot([0.], [0.], 'ro', ms=10)
 axScatter.text(0.,0.,'GR',color='r',fontsize=28)
