@@ -2,10 +2,12 @@ import numpy as np
 import matplotlib.pyplot as plt
 from pylab import rand
 from cmath import *
+import os,sys
 
-from psrpbdot import M1
+#from psrpbdot import M1
 from datatools.tempo import *
 from astropy import coordinates as coord
+from astropy import constants as const
 from tools.Coordinate import *
 import numpy.linalg as linalg
 from GalacticGeometry import *
@@ -14,20 +16,29 @@ from GalacticGeometry import *
 secperday = 24*3600
 #solardist = 8.34 # old
 solardist = 8.34 # Reid et al. 2014, (rmb+14)
-G = 6.673e-8
-c = 2.99792458e10
 PI = np.pi
-AU = 1.469e13
-Msun = 1.9882e33
 Tsun = 4.925490947e-6
 secperday = 24*3600
 R0 = solardist
+#AU =  1.469e13
+#Msun = 1.9882e33
+#G = 6.673e-8
+#c = 2.99792458e10
+c = const.c.cgs.value
+kpc = const.kpc.cgs.value
+AU = const.au.cgs.value #1.469e13
+Msun = const.M_sun.cgs.value #1.9882e33
+G = const.G.cgs.value
 
+from optparse import OptionParser
+usage = "usage: %prog [options] arg"
+parser = OptionParser()
+parser.add_option("-f", '--parfile', dest="parfile", help="par file")
+(options, args) = parser.parse_args(args=sys.argv[1:])
+print options
+parfile = options.parfile
 """load the parfile"""
-#pf = PARfile('1713.Dec.mcmc.par')
-#pf = PARfile('mcmcresult.par')
-#pf = PARfile('1713.sns.par')
-pf = PARfile('1713.final.par')
+pf = PARfile(parfile)
 
 """read some information from the parfile"""
 gl, gb = getGpos(pf)
@@ -94,6 +105,8 @@ def EccArea(ECC, EF, THETA):
 def Pintegrant(PX, SINI, PAASCNODE, M1, M2, PB, ECC, OM, Delta):
     """ Calculate the "probability" for given Delta and timing parameters
     """
+    VI = np.arange(M1.size)[np.logical_and(M1 > 1.0, M1 < 2.5)] #valid indices
+    #print 'validindices', VI
     D = 1./PX
     Omega = PAASCNODE/180.*np.pi
     z = np.sin(gb) * D
@@ -121,8 +134,8 @@ def Pintegrant(PX, SINI, PAASCNODE, M1, M2, PB, ECC, OM, Delta):
     #EF = Delta * ( 0.5 * KG * c**2 / G / Mtot / Msun /(2*PI/PB)**2 )
     #return  ECC*xi/( 0.5 * KG * c**2 / G / Mtot / Msun /(2*PI/PB)**2 )
     Areas = 0.
-    Areas += sum(EccArea(ECC, EF, THETA))
-    Areas += sum(EccArea(ECC, EF, THETA-np.pi))
+    Areas += sum(EccArea(ECC[VI], EF[VI], THETA[VI]))
+    Areas += sum(EccArea(ECC[VI], EF[VI], THETA[VI]-np.pi))
     return Areas
 
 ''' load in the MCMC results for Delta estimation'''
@@ -136,7 +149,7 @@ plist = dic['parameters']
 #plist = open('no_omdot_nonlinear_powerlaw/pars.txt', 'r').readlines()
 #pl = [p.strip('\n') for p in plist]
 #plist = pl
-MChain = pickle.load(open('TinyMChain.p','rb'))
+MChain = pickle.load(open('MChain.p','rb'))
 #MChain = pickle.load(open('SmallMChain.p','rb'))
 MarkovChain = MChain['Chain']
 #MarkovChain = np.loadtxt('no_omdot_nonlinear_powerlaw/chain_1.0.txt')
@@ -144,33 +157,68 @@ MarkovChain = MChain['Chain']
 #MChain = pickle.load(open('MChain.p','rb'))
 #MarkovChain = MChain['Chain']
 MCMCSize = len(MarkovChain)
-pi = 3.141592653589793
-twopi = 6.283185307179586
-G = 6.673e-8
-c = 2.99792458e10
-Msun = 1.9882e33
-im2 = plist.index('M2')
+
+TS99 = lambda pb, p: (pb/p[1])**(1./p[0]) + p[2]
+def PbToM2(pb): #based on different theoretical models in Tauris & Savonije 1999
+    pars = [(4.5, 1.2e5, 0.12), (4.75, 1.1e5, 0.115), (5.0, 1.e5, 0.11)]
+    M2s = np.array([TS99(pb, p) for p in pars])
+    return np.random.uniform(M2s.min(), M2s.max())
+    
 ipb = plist.index('PB')
-isini = plist.index('SINI')
-#ii = plist.index('KIN')
-ia = plist.index('A1')
-iecc = plist.index('E')
-ipx = plist.index('PX')
-iomega = plist.index('PAASCNODE')
-#iomega = plist.index('KOM')
-iom = plist.index('OM')
-ichisq = plist.index('chisq')
-M2 = np.array([float(p[im2])*Msun for p in MarkovChain])
 PB = np.array([float(p[ipb])*secperday for p in MarkovChain])
-SINI = np.array([float(p[isini]) for p in MarkovChain])
-OM = np.array([float(p[iom]) for p in MarkovChain])
-a = np.array([float(p[ia])*c for p in MarkovChain])
-M1 = (PB/2/pi*np.sqrt(G*(M2*SINI)**3/a**3)-M2)/Msun
-M2 = M2/Msun
-ECC = np.array([float(p[iecc]) for p in MarkovChain])
+
+if 'M2' in plist:
+    im2 = plist.index('M2')
+    M2 = np.array([float(p[im2]) for p in MarkovChain])
+else:
+    M2 = np.array([PbToM2(p/secperday) for p in PB])
+
+#print 'M2', M2
+
+if 'SINI' in plist:
+    isini = plist.index('SINI')
+    SINI = np.array([float(p[isini]) for p in MarkovChain])
+elif 'KIN' in plist:
+    ii = plist.index('KIN')
+    SINI = np.sin(np.array([float(p[ii])/180.*np.pi for p in MarkovChain]))
+else:
+    COSI = np.random.uniform(0., 1., MCMCSize)
+    SINI = np.sqrt(1. - COSI**2)
+
+#print 'SINI', SINI
+
+ia = plist.index('A1')
+a = np.array([float(p[ia]) for p in MarkovChain])
+
+if 'E' in plist:
+    iecc = plist.index('E')
+    ECC = np.array([float(p[iecc]) for p in MarkovChain])
+elif 'ECC' in plist:
+    iecc = plist.index('ECC')
+    ECC = np.array([float(p[iecc]) for p in MarkovChain])
+
+ipx = plist.index('PX')
 PX = np.array([float(p[ipx]) for p in MarkovChain])
-PAASCNODE = np.array([float(p[iomega]) for p in MarkovChain])
+
+if 'PAASCNODE' in plist:
+    iomega = plist.index('PAASCNODE')
+    PAASCNODE = np.array([float(p[iomega]) for p in MarkovChain])
+elif 'KOM' in plist:
+    iomega = plist.index('KOM')
+    PAASCNODE = np.array([float(p[iomega]) for p in MarkovChain])
+else:
+    PAASCNODE = np.random.uniform(0., 360.,  MCMCSize)
+
+iom = plist.index('OM')
+OM = np.array([float(p[iom]) for p in MarkovChain])
+
+#M1 = (PB/2/pi*np.sqrt(G*(M2*SINI)**3/a**3)-M2)/Msun
+M1 = PB/2/pi*(np.sqrt(Tsun*(M2*SINI)**3/a**3))-M2
+#print 'M1', M1
+
+ichisq = plist.index('chisq')
 chisq = [p[ichisq] for p in MarkovChain]
+
 bestidx = chisq.index(min(chisq))
 
 

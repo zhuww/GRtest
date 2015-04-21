@@ -166,7 +166,7 @@ if 'M2' in plist:
 else:
     M2 = np.array([PbToM2(p/secperday) for p in PB])
 
-#print 'M2', M2
+print 'M2', M2
 
 if 'SINI' in plist:
     isini = plist.index('SINI')
@@ -201,7 +201,7 @@ else:
 
 #M1 = (PB/2/pi*np.sqrt(G*(M2*SINI)**3/a**3)-M2)/Msun
 M1 = PB/2/pi*(np.sqrt(Tsun*(M2*SINI)**3/A**3))-M2
-#print 'M1', M1
+print 'M1', M1
 
 
 #im2 = plist.index('M2')
@@ -226,7 +226,7 @@ bestidx = chisq.index(min(chisq))
 def Integ(alpha):
     global M1, M2, PB, F0, ECC, PMRA, PMDEC, PX, SINI, PAASCNODE, OM, w
     VI = np.arange(M1.size)[np.logical_and(M1 > 1.0, M1 < 2.5)] #valid indices
-    #print 'validindices', VI
+    print 'validindices', VI
     #pres = np.array([Pintegrant(M1[i], M2[i], PB[i], F0[i], ECC[i], PMRA[i], PMDEC[i], PX[i], SINI[i], PAASCNODE[i], OM[i], w[i]) for i in VI])
     pres = np.array([Pintegrant(M1[i], M2[i], PB[i], F0, ECC[i], PMRA[i], PMDEC[i], PX[i], SINI[i], PAASCNODE[i], OM[i], w[i]) for i in VI])
     THETA = 1.* pres[...,0]

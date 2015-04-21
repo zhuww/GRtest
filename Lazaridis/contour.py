@@ -8,12 +8,12 @@ from astropy import constants as const
 
 c = 2.99792458e10
 PI = pi
-AU = const.au.cgs.value #1.469e13
-Msun = const.M_sun.cgs.value #1.9882e33
 secperday = 24*3600
 Tsun = 4.925490947e-6
 c = const.c.cgs.value
 kpc = const.kpc.cgs.value
+AU = const.au.cgs.value #1.469e13
+Msun = const.M_sun.cgs.value #1.9882e33
 
 def M1(pf):
     return float(DM1(pf))
