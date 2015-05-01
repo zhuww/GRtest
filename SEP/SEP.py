@@ -45,16 +45,18 @@ gl, gb = getGpos(pf)
 D = 1./float(pf.PX[0])
 Eerr = float(pf.E[1])
 OMerr = float(pf.OM[1])/180.*np.pi
-"""Calculate the coordinate transfermation matrix"""
-T, GT = GetTransferMatrix(pf)
 """Galactic acceleration for low z """
 Kz = lambda z:(2.27*z + 3.68*(1-np.exp(-4.31*z)) ) * 1.e-9 #Galactic acceleration in z direction (cm/s^2)
+
+"""Calculate the coordinate transfermation matrix"""
+T, GT = GetTransferMatrix(pf)#, paascnode)
 
 
 def getKG(kr, zeta, z, sini, paascnode, om):
     """calculate the projection of Galactic acceleration on the orbital plane
        return  "angle between g and periastron", "projected acceleration (km/s)"
     """
+
     g_r = GT.I * kr * ( np.matrix((np.cos(0.-zeta),np.sin(0.-zeta),0)).T) #X/linalg.norm(X)
     g_z = GT.I * Kz(z) * (np.matrix((0., 0., -1.)).T) 
     g = g_r + g_z

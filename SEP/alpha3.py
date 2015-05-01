@@ -37,10 +37,11 @@ parfile = options.parfile
 """load the parfile"""
 pf = PARfile(parfile)
 
+"""calculate coordinate transfermation matrix using the parfile"""
+T, GT = GetTransferMatrix(pf)#, PAASCNODE)
+
 Eerr = float(pf.E[1])
 OMerr = float(pf.OM[1])/180.*np.pi
-"""calculate coordinate transfermation matrix using the parfile"""
-T, GT = GetTransferMatrix(pf)
 
 def EccArea(ECC, EF, THETA):
     """ calculate the "area" in the four 3-sigma points for given ECC_observed, ECC_forced and the angle between them.

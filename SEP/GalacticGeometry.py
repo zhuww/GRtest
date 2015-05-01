@@ -23,7 +23,7 @@ def getGpos(pf):
     b = pos.galactic.b.rad
     return l,b
 
-def GetTransferMatrix(pf):
+def GetTransferMatrix(pf):#, PAASCNODE):
     #print getGpos(pf)
     gl, gb = getGpos(pf)
     D = 1./float(pf.PX[0])
@@ -37,7 +37,8 @@ def GetTransferMatrix(pf):
     Dec = pos1713.dec.rad
     DRA = pos1713.ra.rad - GCpos.ra.rad
     DDec = pos1713.dec.rad - GCpos.dec.rad
-    Omega = float(pf.PAASCNODE)/180.*np.pi
+    #Omega = float(pf.PAASCNODE)/180.*np.pi
+    #Omega = float(PAASCNODE)/180.*np.pi
     Theta_g = np.pi - np.arctan(np.tan(DRA)/np.sin(DDec))
     """
     #Transfer the RA-Dec coordiate to the plane of sky coordiate: Two steps:
