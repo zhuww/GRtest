@@ -26,7 +26,10 @@ def getGpos(pf):
 def GetTransferMatrix(pf):#, PAASCNODE):
     #print getGpos(pf)
     gl, gb = getGpos(pf)
-    D = 1./float(pf.PX[0])
+    try:
+        D = 1./float(pf.PX[0])
+    except:
+        D = float(pf.Dist[0])
     x = D * np.cos(gb) * np.sin(gl)
     y = solardist - D * np.cos(gb) * np.cos(gl) 
     angle = np.arctan(y/x)*180./np.pi

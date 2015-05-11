@@ -42,7 +42,10 @@ pf = PARfile(parfile)
 
 """read some information from the parfile"""
 gl, gb = getGpos(pf)
-D = 1./float(pf.PX[0])
+try:
+    D = 1./float(pf.PX[0])
+except:
+    D = float(pf.Dist[0])
 Eerr = float(pf.E[1])
 OMerr = float(pf.OM[1])/180.*np.pi
 """Galactic acceleration for low z """
@@ -199,8 +202,11 @@ elif 'ECC' in plist:
     iecc = plist.index('ECC')
     ECC = np.array([float(p[iecc]) for p in MarkovChain])
 
-ipx = plist.index('PX')
-PX = np.array([float(p[ipx]) for p in MarkovChain])
+try:
+    ipx = plist.index('PX')
+    PX = np.array([float(p[ipx]) for p in MarkovChain])
+except:
+    PX = 1./np.array(float(pf.Dist[0]) + np.random.rand(MCMCSize)*float(pf.Dist[1]))
 
 if 'PAASCNODE' in plist:
     iomega = plist.index('PAASCNODE')
