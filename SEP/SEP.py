@@ -46,8 +46,23 @@ try:
     D = 1./float(pf.PX[0])
 except:
     D = float(pf.Dist[0])
-Eerr = float(pf.E[1])
-OMerr = float(pf.OM[1])/180.*np.pi
+
+if pf.__dict__['BINARY'] in ['DD', 'T2']:
+    E = float(pf.E[0])
+    Eerr = float(pf.E[1])
+    OMerr = float(pf.OM[1])/180.*np.pi
+elif pf.__dict__['BINARY'] in ['ELL1']:
+    E = np.sqrt(float(pf.EPS1[0]**2 + pf.EPS2[0]**2))
+    Eerr = np.sqrt(float(pf.EPS1[1]**2 + pf.EPS2[1]**2))
+    e1 = float(pf.EPS1[0])
+    e2 = float(pf.EPS2[0])
+    er1 = pf.EPS1[1]/pf.EPS1[0]
+    er2 = pf.EPS2[1]/pf.EPS2[0]
+    er = np.sqrt(float(er1**2 + er2**2))
+    OM = np.arctan2(e1,e2)*180./np.pi % 360
+    x = e1/e2
+    OMerr = 1./(1. + x**2) * er * x * 180./np.pi
+
 """Galactic acceleration for low z """
 Kz = lambda z:(2.27*z + 3.68*(1-np.exp(-4.31*z)) ) * 1.e-9 #Galactic acceleration in z direction (cm/s^2)
 
@@ -127,6 +142,7 @@ def Pintegrant(PX, SINI, PAASCNODE, M1, M2, PB, ECC, OM, Delta):
     KGarray = []
     THETA = []
     for i,sini in enumerate(SINI):
+        #print 'i, z[i]', i, z[i], gb, D[i]
         theta, kg= getKG(Kr[i], zeta[i], z[i], sini, PAASCNODE[i], OM[i])
         THETA.append(theta)
         #THETA.append(np.abs(theta-np.pi))
@@ -201,6 +217,12 @@ if 'E' in plist:
 elif 'ECC' in plist:
     iecc = plist.index('ECC')
     ECC = np.array([float(p[iecc]) for p in MarkovChain])
+elif 'EPS1' in plist:
+    ie1 = plist.index('EPS1')
+    ie2 = plist.index('EPS2')
+    E1 = np.array([float(p[ie1]) for p in MarkovChain])
+    E2 = np.array([float(p[ie2]) for p in MarkovChain])
+    ECC = np.sqrt(E1**2 + E2**2)
 
 try:
     ipx = plist.index('PX')
@@ -217,8 +239,15 @@ elif 'KOM' in plist:
 else:
     PAASCNODE = np.random.uniform(0., 360.,  MCMCSize)
 
-iom = plist.index('OM')
-OM = np.array([float(p[iom]) for p in MarkovChain])
+if pf.__dict__['BINARY'] in ['DD', 'T2']:
+    iom = plist.index('OM')
+    OM = np.array([float(p[iom]) for p in MarkovChain])
+elif pf.__dict__['BINARY'] in ['ELL1']:
+    ie1 = plist.index('EPS1')
+    ie2 = plist.index('EPS2')
+    E1 = np.array([float(p[ie1]) for p in MarkovChain])
+    E2 = np.array([float(p[ie2]) for p in MarkovChain])
+    OM = np.arctan2(E1,E2)*180./np.pi % 360
 
 #M1 = (PB/2/pi*np.sqrt(G*(M2*SINI)**3/a**3)-M2)/Msun
 M1 = PB/2/pi*(np.sqrt(Tsun*(M2*SINI)**3/a**3))-M2

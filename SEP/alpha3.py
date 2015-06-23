@@ -40,8 +40,21 @@ pf = PARfile(parfile)
 """calculate coordinate transfermation matrix using the parfile"""
 T, GT = GetTransferMatrix(pf)#, PAASCNODE)
 
-Eerr = float(pf.E[1])
-OMerr = float(pf.OM[1])/180.*np.pi
+if pf.__dict__['BINARY'] in ['DD', 'T2']:
+    E = float(pf.E[0])
+    Eerr = float(pf.E[1])
+    OMerr = float(pf.OM[1])/180.*np.pi
+elif pf.__dict__['BINARY'] in ['ELL1']:
+    E = np.sqrt(float(pf.EPS1[0]**2 + pf.EPS2[0]**2))
+    Eerr = np.sqrt(float(pf.EPS1[1]**2 + pf.EPS2[1]**2))
+    e1 = float(pf.EPS1[0])
+    e2 = float(pf.EPS2[0])
+    er1 = pf.EPS1[1]/pf.EPS1[0]
+    er2 = pf.EPS2[1]/pf.EPS2[0]
+    er = np.sqrt(float(er1**2 + er2**2))
+    OM = np.arctan2(e1,e2)*180./np.pi % 360
+    x = e1/e2
+    OMerr = 1./(1. + x**2) * er * x * 180./np.pi
 
 def EccArea(ECC, EF, THETA):
     """ calculate the "area" in the four 3-sigma points for given ECC_observed, ECC_forced and the angle between them.
@@ -62,8 +75,8 @@ def EccArea(ECC, EF, THETA):
             value = max((np.log10(min(max(abs4), 0.05)) - np.log10(max(min(abs4),1.e-6))),0)*np.pi*2
         else:
             value = max((np.log10(min(max(abs4), 0.05)) - np.log10(max(min(abs4),1.e-6))),0)*(max(p4)-min(p4))
-            if max(p4)-min(p4)>1.:
-                print 'what?', value
+            if max(p4)-min(p4)>2.*np.pi:
+                print 'what?', p4, value
         areas.append(value)
     areas = np.array(areas)
     return areas
@@ -133,10 +146,23 @@ ipb = plist.index('PB')
 PB = np.array([float(p[ipb])*secperday for p in MarkovChain])
 #isini = plist.index('SINI')
 #SINI = np.array([float(p[isini]) for p in MarkovChain])
-iom = plist.index('OM')
-OM = np.array([float(p[iom]) for p in MarkovChain])
+
+if pf.__dict__['BINARY'] in ['DD', 'T2']:
+    iom = plist.index('OM')
+    OM = np.array([float(p[iom]) for p in MarkovChain])
+elif pf.__dict__['BINARY'] in ['ELL1']:
+    ie1 = plist.index('EPS1')
+    ie2 = plist.index('EPS2')
+    E1 = np.array([float(p[ie1]) for p in MarkovChain])
+    E2 = np.array([float(p[ie2]) for p in MarkovChain])
+    OM = np.arctan2(E1,E2)*180./np.pi % 360
+
 ia = plist.index('A1')
-ipx = plist.index('PX')
+try:
+    ipx = plist.index('PX')
+    PX = np.array([float(p[ipx]) for p in MarkovChain])
+except:
+    PX = 1./np.array(float(pf.Dist[0]) + np.random.rand(MCMCSize)*float(pf.Dist[1]))
 ipmra = plist.index('PMRA')
 ipmdec = plist.index('PMDEC')
 A = np.array([float(p[ia]) for p in MarkovChain])
@@ -144,7 +170,6 @@ A = np.array([float(p[ia]) for p in MarkovChain])
 #F0 = np.array([float(p[if0]) for p in MarkovChain])
 #iecc = plist.index('E')
 #ECC = np.array([float(p[iecc]) for p in MarkovChain])
-PX = np.array([float(p[ipx]) for p in MarkovChain])
 PMRA = np.array([float(p[ipmra]) for p in MarkovChain])
 PMDEC = np.array([float(p[ipmdec]) for p in MarkovChain])
 #ia = plist.index('A1')
@@ -188,6 +213,12 @@ if 'E' in plist:
 elif 'ECC' in plist:
     iecc = plist.index('ECC')
     ECC = np.array([float(p[iecc]) for p in MarkovChain])
+elif 'EPS1' in plist:
+    ie1 = plist.index('EPS1')
+    ie2 = plist.index('EPS2')
+    E1 = np.array([float(p[ie1]) for p in MarkovChain])
+    E2 = np.array([float(p[ie2]) for p in MarkovChain])
+    ECC = np.sqrt(E1**2 + E2**2)
 
 
 if 'PAASCNODE' in plist:
