@@ -1,0 +1,49 @@
+PSR              J1600-3053  
+RAJ      16:00:51.90324370
+DECJ     -30:53:49.3840391
+PMRA               -0.8988
+PMDEC              -6.6912
+PX                  0.8014
+F0    277.9377112727217991
+F1     -7.340812278424D-16
+PEPOCH        55416.000000
+START            54400.659  1
+FINISH           56585.814  1
+DM               52.333000
+FD1  6.68265488D-05
+FD2 -3.29461587D-05
+SOLARN0              10.00
+EPHEM               DE421
+CLK                 TT(BIPM)    
+UNITS               TDB
+TIMEEPH             FB90
+T2CMETHOD           TEMPO
+CORRECT_TROPOSPHERE N
+PLANET_SHAPIRO      N
+DILATEFREQ          N
+NTOA                  7804
+TRES                  1.14
+TZRMJD  55578.51364690014760
+TZRFRQ             868.000
+TZRSITE                  1
+NITS                     1
+NDDM                     1
+INFO -f                              
+BINARY            DD      
+A1             8.801651641
+E             0.0001737519
+T0        55419.1122983003
+PB       14.34846495666033
+OM        181.875709183459
+OMDOT            0.0047297
+SINI              0.883297
+M2                0.407036
+T2EFAC -f Rcvr1_2_GUPPI   1.053
+T2EFAC -f Rcvr_800_GUPPI   1.114
+T2EFAC -f Rcvr_800_GASP   1.169
+T2EFAC -f Rcvr1_2_GASP   1.082
+T2EQUAD -f Rcvr1_2_GUPPI   0.001
+T2EQUAD -f Rcvr_800_GUPPI   0.344
+T2EQUAD -f Rcvr_800_GASP   0.000
+T2EQUAD -f Rcvr1_2_GASP   0.431
+JUMP -fe Rcvr_800      -0.000009489  0       0.000000000
