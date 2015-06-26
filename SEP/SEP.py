@@ -113,9 +113,11 @@ def EccArea(ECC, EF, THETA):
         if p4.min() < 0. and p4.max() - p4.min() > np.pi:
             p4[p4<0.] += 2.*np.pi
         if np.mean(abs4) < Eerr*3 and abs(np.mean(p4))<OMerr*3:
-            value = max((np.log10(min(max(abs4), 0.05)) - np.log10(max(min(abs4),1.e-6))),0)*np.pi*2
+            #value = max((np.log10(min(max(abs4), 0.05)) - np.log10(max(min(abs4),1.e-6))),0)*np.pi*2
+            value = max((np.log10(min(max(abs4), 0.05)) - np.log10(max(min(abs4),0.e-10))),0)*np.pi*2
         else:
-            value = max((np.log10(min(max(abs4), 0.05)) - np.log10(max(min(abs4),1.e-6))),0)*(max(p4)-min(p4))
+            #value = max((np.log10(min(max(abs4), 0.05)) - np.log10(max(min(abs4),1.e-6))),0)*(max(p4)-min(p4))
+            value = max((np.log10(min(max(abs4), 0.05)) - np.log10(max(min(abs4),0.e-10))),0)*(max(p4)-min(p4))
         areas.append(value)
     areas = np.array(areas)
     #print 'EF, ECC, THETA, AREA, A4, p4', EF.mean(), ECC.mean(), THETA.mean(), areas.mean(), max(abs4),min(abs4), max(p4), min(p4)
