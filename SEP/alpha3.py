@@ -73,10 +73,10 @@ def EccArea(ECC, EF, THETA):
         if np.mean(abs4) < Eerr*3 and abs(np.mean(p4))<OMerr*3:
             #print "hei, it's happening ******** "
             #value = max((np.log10(min(max(abs4), 0.05)) - np.log10(max(min(abs4),1.e-6))),0)*np.pi*2
-            value = max((np.log10(min(max(abs4), 0.05)) - np.log10(max(min(abs4),1.e-10))),0)*np.pi*2
+            value = max((np.log10(min(max(abs4), 0.05)) - np.log10(max(min(abs4),0.e-10))),0)*np.pi*2
         else:
             #value = max((np.log10(min(max(abs4), 0.05)) - np.log10(max(min(abs4),1.e-6))),0)*(max(p4)-min(p4))
-            value = max((np.log10(min(max(abs4), 0.05)) - np.log10(max(min(abs4),1.e-10))),0)*(max(p4)-min(p4))
+            value = max((np.log10(min(max(abs4), 0.05)) - np.log10(max(min(abs4),0.e-10))),0)*(max(p4)-min(p4))
             if max(p4)-min(p4)>2.*np.pi:
                 print 'what?', p4, value
         areas.append(value)
