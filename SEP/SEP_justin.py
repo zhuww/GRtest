@@ -38,7 +38,11 @@ OMerr = float(pf.OM[1])/180.*np.pi
 """Calculate the coordinate transfermation matrix"""
 T, GT = GetTransferMatrix(pf)
 """Galactic acceleration for low z """
-Kz = lambda z:(2.27*z + 3.68*(1-np.exp(-4.31*z)) ) * 1.e-9 #Galactic acceleration in z direction (cm/s^2)
+#Kz = lambda z:(2.27*z + 3.68*(1-np.exp(-4.31*z)) ) * 1.e-9 #Galactic acceleration in z direction (cm/s^2)
+def Kz(z):
+    absz = np.abs(z)
+    sign = z/absz
+    return sign * (2.27*absz + 3.68*(1-np.exp(-4.31*absz)) ) * 1.e-9
 
 
 def getKG(kr, zeta, z, sini, paascnode, om):
