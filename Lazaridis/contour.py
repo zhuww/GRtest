@@ -46,7 +46,9 @@ from datatools.tempo import tempofit, tempo2fit, touchparfile, uniquename, PARfi
 #pf = PARfile('./J1713+0747.par')
 #pf = PARfile('./1713.final.par')
 #pf = PARfile('./Oct.T2.par')
-pf = PARfile('./Feb.T2.RN.par')
+#pf = PARfile('./Feb.T2.RN.par')
+#pf = PARfile('./1713.all.omdot.par')
+pf = PARfile('./1713.cut.par')
 
 
 def Pbdot_exc(psr, GdotOG, KD):

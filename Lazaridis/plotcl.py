@@ -12,7 +12,7 @@ initmatplotlib(cols=1)
 
 
 MChain = pickle.load(open('MChain.p', 'r'))['Chain']
-best = pickle.load(open('bestpar.p', 'r'))['BEST']
+#best = pickle.load(open('bestpar.p', 'r'))['BEST']
 
 MChain = np.array(MChain)
 x = MChain[:,0]

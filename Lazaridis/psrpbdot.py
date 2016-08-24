@@ -68,20 +68,24 @@ def Pbdot_Gal(pf):
     pos = coord.SkyCoord(str(ra) +' '+ str(dec))
     l = pos.galactic.l.rad
     b = pos.galactic.b.rad
+    #print 'l, b:', l, b
     Pb = float(pf.PB[0] * secperday)
     #d = AU * 180 / PI * 3600 / pf.PX[0] * 1000 
     d = float(1/pf.PX[0])
     pf.DIST = d
     z_kpc = float(d)*(abs(sin(b)))#/kpc must be positive
+    #print "z (kpc): ", z_kpc, "d (kpc):", d
     a_z = ((2.27)*z_kpc + (3.68)*(1 - exp((-4.31)*z_kpc)))*(1.e-9) #cm s^-2
     #print 'a_z:', a_z
     A_z = -1 * a_z *abs(sin(b))/c
     pf.A_z = A_z
     R0 = (8.34) #* kpc # Reid et al. 2014
     beta = float(d/R0) * cos(b) - cos(l)
+    #print 'beta, c:', beta, c
     Omega0 = (240. * 1.e5) #240+/-8 km/s; Reid et al  2014
     #print b,l, cos(b), cos(l), beta
     A_x = -1/c * (cos(b)) * (Omega0**2/R0/kpc) * (cos(l) + beta/(sin(l)**2 + beta**2))
+    #print '(cos(l) + beta/(sin(l)**2 + beta**2))', (cos(l) + beta/(sin(l)**2 + beta**2))
     pf.A_x = A_x
     #print 'Ax, Az: ',A_x, A_z
     fac1 = float(pf.PX[1]/pf.PX[0])
@@ -104,12 +108,19 @@ if __name__ == '__main__':
     #pf  = PARfile('./mcmcresult.par')
     #pf  = PARfile('./1713.Apr.par')
     #pf  = PARfile('./Oct.T2.par')
-    pf  = PARfile('./Feb.T2.RN.par')
+    #pf  = PARfile('./Feb.T2.RN.par')
+    #pf  = PARfile('./1713.all.par')
+    pf  = PARfile('./1713.cut.par')
     if pf.PBDOT[0] > Decimal('1.e-10'):#tempo 1 units
         pf.PBDOT[0] *= Decimal('1.e-12')
         pf.PBDOT[1] *= Decimal('1.e-12')
 
     from round import shortform as SF
+    import sys
+    #Gal = Pbdot_Gal(pf)
+    #print 'PBdot(Galaxtic):' , SF(Gal)
+    #sys.exit(0)
+
     Shl = Shlkovskii(pf)
     Gal = Pbdot_Gal(pf)
     GW = Pbdot_GW(pf)
