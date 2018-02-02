@@ -14,6 +14,8 @@ c = const.c.cgs.value
 kpc = const.kpc.cgs.value
 #Msun = Decimal(0.9882e33)
 
+R0 = (8.34) #* kpc # Reid et al. 2014
+Omega0 = (240. * 1.e5) #240+/-8 km/s; Reid et al  2014
 
 def M1(pf):
     Tsun = Decimal('4.925490947')*Decimal('0.000001') #Tsun == GM/c^3 in seconds
@@ -59,6 +61,7 @@ def Shlkovskii(pf):
 
 
 def Pbdot_Gal(pf):
+    global R0, Omega0
     try:
         name = pf.PSRJ
     except:
@@ -79,10 +82,8 @@ def Pbdot_Gal(pf):
     #print 'a_z:', a_z
     A_z = -1 * a_z *abs(sin(b))/c
     pf.A_z = A_z
-    R0 = (8.34) #* kpc # Reid et al. 2014
     beta = float(d/R0) * cos(b) - cos(l)
     #print 'beta, c:', beta, c
-    Omega0 = (240. * 1.e5) #240+/-8 km/s; Reid et al  2014
     #print b,l, cos(b), cos(l), beta
     A_x = -1/c * (cos(b)) * (Omega0**2/R0/kpc) * (cos(l) + beta/(sin(l)**2 + beta**2))
     #print '(cos(l) + beta/(sin(l)**2 + beta**2))', (cos(l) + beta/(sin(l)**2 + beta**2))

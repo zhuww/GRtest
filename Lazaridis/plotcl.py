@@ -123,7 +123,8 @@ ylabel('$\kappa_D[10^{-4}]$', fontsize=24)
 
 axScatter.axvline(0, linestyle='--', color='k')
 axScatter.axhline(0, linestyle='--', color='k')
-axScatter.axvspan(( 0.009-0.182), (0.009+0.182), facecolor='0.5', alpha=0.3, linewidth=2) #Fienga et al. 2014
+#axScatter.axvspan(( 0.009-0.182), (0.009+0.182), facecolor='0.5', alpha=0.3, linewidth=2) #Fienga et al. 2014
+axScatter.axvspan(( 0.03-0.09), (0.03+0.09), facecolor='0.5', alpha=0.3, linewidth=2) #Fienga et al. 2015
 axScatter.axvspan((-0.7-7.6)/10, (-0.7+7.6)/10, fill=False, hatch='/', linewidth=2) #Freire et al. 2012
 
 axScatter.plot([0.], [0.], 'ro', ms=10)

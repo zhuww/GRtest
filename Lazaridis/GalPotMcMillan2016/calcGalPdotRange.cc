@@ -46,7 +46,8 @@ int main(int argc,char *argv[])
     
     if (argc == 5) {
             //file.open("/Users/wex/Science/psrsoft/GalPot-McMillan2016/pot/PJM16_best.Tpot");
-        file.open("/home/zhuww/work/timing/1713all/GRtest/GalPotMcMillan2016/pot/PJM16_best.Tpot");
+        //file.open("/home/zhuww/work/timing/1713all/GRtest/GalPotMcMillan2016/pot/PJM16_best.Tpot");
+        file.open("/homes/zhuww/data/timing/GRtest/Lazaridis/GalPotMcMillan2016/pot/PJM16_best.Tpot");
     } else {
     	file.open(argv[5]);
     }

@@ -6,6 +6,7 @@ from astropy import coordinates as coord
 from astropy import constants as const
 from tools.Coordinate import RA, Dec
 from round import TexStyle as SF
+from threadit import spamit
 
 Tsun = Decimal('4.925490947')*Decimal('0.000001') #Tsun == GM/c^3 in seconds
 PI = Decimal(np.pi)
@@ -16,6 +17,18 @@ secperyear = secperday*365.24218967
 c = const.c.cgs.value
 kpc = const.kpc.cgs.value
 #Msun = Decimal(0.9882e33)
+
+def McMillanPot(L, B, d):
+    return float(getoutput('./GalPotMcMillan2016/calcGalPdot.exe %s %s %s' % (L, B, d)))
+
+def SurfaceDensity(Mod, R):
+    return float(getoutput('./GalPotMcMillan2016/surfacedensity.exe %s %s' % (Mod, R)))/1.e6 #Msun/pc^2, while the original unit is Msun/kpc^2
+
+
+def dPoP(L, B, d, Mod):
+    res = getoutput('./GalPotMcMillan2016/compPdotMods.exe %s %s %s %s' % (L, B, d, Mod))
+    hor, ver= res.split(' ')
+    return float(hor), float(ver)
 
 def Pbdot_Gal(pf):
     try:
@@ -32,24 +45,18 @@ def Pbdot_Gal(pf):
 
     Pb = float(pf.PB[0] * secperday)
     d = float(1/pf.PX[0])
-    print 'L, B, D:', L, B, d
     pf.DIST = d
-    z_kpc = float(d)*(abs(sin(b)))#/kpc must be positive
-    a_z = ((2.27)*z_kpc + (3.68)*(1 - exp((-4.31)*z_kpc)))*(1.e-9) #cm s^-2
-    A_z = -1 * a_z *abs(sin(b))/c
-    pf.A_z = A_z
-    R0 = (8.34) #* kpc # Reid et al. 2014
-    beta = float(d/R0) * cos(b) - cos(l)
-    Omega0 = (240. * 1.e5) #240+/-8 km/s; Reid et al  2014
-    A_x = -1/c * (cos(b)) * (Omega0**2/R0/kpc) * (cos(l) + beta/(sin(l)**2 + beta**2))
-    pf.A_x = A_x
-    fac1 = float(pf.PX[1]/pf.PX[0])
+    #print 'L, B, D:', L, B, d
+    #output = getoutput('./GalPotMcMillan2016/calcGalPdot.exe %s %s %s' % (L, B, d))
+    #print output
+    px = np.random.normal(float(pf.PX[0]), float(pf.PX[1]), 10000)
+    res = np.array(spamit(McMillanPot, [(L, B, 1/x) for x in px]))
+    
+    val = res.mean() * Pb
     fac2 = 8/240 #Omega_0
     fac3 = 0.16/8.34 #R0 Reid et al 2014
-    val = float(Pb*(A_z + A_x))
-    err1 = A_x * fac1 
-    err2 = A_z * sqrt(fac1**2 + fac2**2 + fac3**2)
-    err = sqrt(err1**2 + err2**2) * float(Pb)
+    fac1 = res.std()/res.mean()
+    err = abs(sqrt(fac1**2 + fac2**2 + fac3**2) * val)
     return val, err
 
 

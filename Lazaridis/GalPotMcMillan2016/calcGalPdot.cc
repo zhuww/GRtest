@@ -45,7 +45,8 @@ int main(int argc,char *argv[])
     }
     
     //file.open("/Users/wex/Science/psrsoft/GalPot-McMillan2016/pot/PJM11_best.Tpot");
-    file.open("/home/zhuww/work/timing/GRtest/Lazaridis/GalPotMcMillan2016/pot/PJM16_best.Tpot");
+    //file.open("/home/zhuww/work/timing/GRtest/Lazaridis/GalPotMcMillan2016/pot/PJM16_best.Tpot");
+    file.open("/homes/zhuww/data/timing/GRtest/Lazaridis/GalPotMcMillan2016/pot/PJM16_best.Tpot");
     
     GalaxyPotential Phi(file);
     file.close();

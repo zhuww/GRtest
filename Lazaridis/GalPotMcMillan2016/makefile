@@ -2,7 +2,7 @@
 #include make.GalPot
 
 
-all:  calcGalPdot.exe calcGalPdotRange.exe testGalPot.exe findOrbit.exe findOrbitProperties.exe findManyOrbitProperties.exe findManyOrbitPropertiesfromGalactic.exe findManyOrbitPropertiesfromEquatorial.exe findManyOrbitPropertiesfromEquatorialwErrors.exe Coord_converter.exe GalPot Other
+all: compPdotMods.exe surfacedensity.exe calcGalPdot.exe calcGalPdotRange.exe testGalPot.exe findOrbit.exe findOrbitProperties.exe findManyOrbitProperties.exe findManyOrbitPropertiesfromGalactic.exe findManyOrbitPropertiesfromEquatorial.exe findManyOrbitPropertiesfromEquatorialwErrors.exe Coord_converter.exe GalPot Other
 
 CPP		= g++
 LIBPOT		= obj/libPot.a

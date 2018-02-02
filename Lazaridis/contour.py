@@ -4,6 +4,7 @@ from psrpbdot import Pbdot_Gal, Shlkovskii, Decimal, Pbdot_GW
 from psrpbdot import M1 as DM1
 from round import TexStyle as SF
 from astropy import constants as const
+from McMillan import Pbdot_Gal
 
 
 c = 2.99792458e10
@@ -19,7 +20,20 @@ def M1(pf):
     return float(DM1(pf))
 
 
-Sp = lambda pf: 0.1*M1(pf)
+
+#Sp = lambda pf: 0.1*M1(pf)
+def Sp(pf, Mp=None):
+    a0 = -1.844760024409430e-01
+    a1 =  5.139282688999537e-01
+    a2 = -2.976824941216130e-01
+    a3 =  8.016791625424646e-02 
+    if Mp == None:
+        m = float(M1(pf))
+        s_p = a0+a1*m+a2*m**2+a3*m**3
+    else:
+        m = float(Mp)
+        s_p = a0+a1*m+a2*m**2+a3*m**3
+    return s_p #* 0.16 / 0.16
 
 psr = {'P':1/218.81184391573209821,'Pdot':(4.0833313846102338808e-16)/(218.81184391573209821)**2,'Pb':(67.825129921577592219)*secperday, 'M1':(1.4)*Msun, 'M2':(0.3)*Msun}
 
@@ -63,7 +77,8 @@ J1713 = {'M1':M1(pf), 'M2':float(pf.M2[0]), 'Sp':Sp(pf), 'Pb':float(pf.PB[0])*se
 #print Pbdot_exc(J1713, 6.e-13, 2.e-4)
 #print '1:', Pbdot_exc(J1713, 1.52789743984e-14, 0.00163158650413)
 J1012 = {'M2':0.16, 'M1':0.16*10.5, 'Pb':0.60467271355*secperday}
-J1012['Sp'] = 0.1*J1012['M1']
+#J1012['Sp'] = 0.1*J1012['M1']
+J1012['Sp'] = Sp(None, Mp=J1012['M1'])
 #print J1012
 #print '2:',Pbdot_exc(J1012, 1.52789743984e-14, 0.00163158650413)
 #print -0.4e-14/0.60467271355/secperday
@@ -114,9 +129,19 @@ PbdOPberr1012 = 1.6e-14/0.60467271355/secperday/2 #2sigma 95 error bar needs to 
 
 pf = PARfile('./J0437.par')
 J0437 = {'M1':M1(pf), 'M2':float(pf.M2[0]), 'Sp':Sp(pf), 'Pb':float(pf.PB[0])*secperday}
-PbdOPb0437 = 1.04e-19
-#PbdOPb0437 = 3.2e-19
-PbdOPberr0437 = 5.7e-19 #2sigma 95 error bar needs to be reduced to 1 sigam
+Shl = Shlkovskii(pf)
+Gal = Pbdot_Gal(pf)
+GW = Pbdot_GW(pf)
+print 'J0437: Shl', Shl, 'Gal', Gal, 'GW', GW
+Pbdot_exc_0437 = float(pf.PBDOT[0]) - Gal[0] - Shl[0] - GW[0]
+Pbdot_exc_0437_err = sqrt(float(pf.PBDOT[1])**2 + Gal[1]**2 + Shl[1]**2 + GW[1]**2)
+print 'J0437 parallax:', pf.PX, 'distance:', 1/pf.PX[0]
+print 'J0437 pbdot:', Pbdot_exc_0437/float(pf.PB[0]*secperday), Pbdot_exc_0437_err/float(pf.PB[0]*secperday)
+PbdOPb0437 = Pbdot_exc_0437/float(pf.PB[0]*secperday)
+PbdOPberr0437 = Pbdot_exc_0437_err/float(pf.PB[0]*secperday)
+#PbdOPb0437 = 1.04e-19
+#PbdOPberr0437 = 5.7e-19 #2sigma 95 error bar needs to be reduced to 1 sigam
+#sys.exit(0)
 
 pf = PARfile('./1738+03.par')
 pf.PBDOT[0] = pf.PBDOT[0]*Decimal('1.e-12')
@@ -193,12 +218,14 @@ minchisq = chisqfunc(bestparameters)
 print 'minchisq:', minchisq
 
 def probcal(GdotOG, KD):
+    chisq = (Pbdot_exc(J1713, GdotOG, KD) - PbdOPb1713)**2/PbdOPberr1713**2  + (Pbdot_exc(J0437, GdotOG, KD) - PbdOPb0437)**2/PbdOPberr0437**2 + (Pbdot_exc(J1738, GdotOG, KD) - PbdOPb1738)**2/PbdOPberr1738**2 #1713, 0437, 1738, no 1012
+    #chisq = (Pbdot_exc(J1713, GdotOG, KD) - PbdOPb1713)**2/PbdOPberr1713**2 + (Pbdot_exc(J1012, GdotOG, KD) - PbdOPb1012)**2/PbdOPberr1012**2 + (Pbdot_exc(J0437, GdotOG, KD) - PbdOPb0437)**2/PbdOPberr0437**2 + (Pbdot_exc(J1738, GdotOG, KD) - PbdOPb1738)**2/PbdOPberr1738**2 #1713, 0437, 1738, 1012
+
     #try:
     #chisq = (Pbdot_exc(J1713, GdotOG, KD) - PbdOPb1713)**2/PbdOPberr1713**2 + (Pbdot_exc(J1012, GdotOG, KD) - PbdOPb1012)**2/PbdOPberr1012**2 
     #chisq = (Pbdot_exc(J1012, GdotOG, KD) - PbdOPb1012)**2/PbdOPberr1012**2 + (Pbdot_exc(J0437, GdotOG, KD) - PbdOPb0437)**2/PbdOPberr0437**2
     #chisq = (Pbdot_exc(J1713, GdotOG, KD) - PbdOPb1713)**2/PbdOPberr1713**2 + (Pbdot_exc(J1012, GdotOG, KD) - PbdOPb1012)**2/PbdOPberr1012**2 + (Pbdot_exc(J0437, GdotOG, KD) - PbdOPb0437)**2/PbdOPberr0437**2
     #"""
-    chisq = (Pbdot_exc(J1713, GdotOG, KD) - PbdOPb1713)**2/PbdOPberr1713**2 + (Pbdot_exc(J1012, GdotOG, KD) - PbdOPb1012)**2/PbdOPberr1012**2 + (Pbdot_exc(J0437, GdotOG, KD) - PbdOPb0437)**2/PbdOPberr0437**2 + (Pbdot_exc(J1738, GdotOG, KD) - PbdOPb1738)**2/PbdOPberr1738**2 #1713, 0437, 1738, 1012
     #"""
     #chisq = (Pbdot_exc(J1713, GdotOG, KD) - PbdOPb1713)**2/PbdOPberr1713**2 + (Pbdot_exc(J1012, GdotOG, KD) - PbdOPb1012)**2/PbdOPberr1012**2 + (Pbdot_exc(J0437, GdotOG, KD) - PbdOPb0437)**2/PbdOPberr0437**2 + (Pbdot_exc(J1738, GdotOG, KD) - PbdOPb1738)**2/PbdOPberr1738**2 + (Pbdot_exc(J1909, GdotOG, KD) - PbdOPb1909)**2/PbdOPberr1909**2 
     #"""#1909
@@ -257,6 +284,7 @@ def mcmc(Chain, runtime, mixingtime=1000):
                 if c > mixingtime:
                     MarkovChain.append((GdotOG, KD))
     #print  MarkovChain
+    print 
     print 'Best Gdot/G, Kappa_D:', best
     print '%d new points generated.' %len(MarkovChain)
     #OldChain = pickle.load(open('MChain.p','r'))['Chain']
